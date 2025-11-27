@@ -1,0 +1,1318 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>E TIMES INDIA * 24 - Live Breaking News</title>
+    <link
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
+      rel="stylesheet"
+    />
+    <link rel="shortcut icon" href="/logo/logo2.png" type="image/x-icon">
+    <link
+      href="https://fonts.googleapis.com/css2?family=Antonio:wght@700&family=Roboto:wght@400;700&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Roboto", sans-serif;
+        background: #fff;
+        color: #222;
+        min-height: 100vh;
+        position: relative;
+        overflow-x: hidden;
+        line-height: 1.5;
+      }
+
+      /* Animated Background */
+      .bg-spots {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: radial-gradient(
+            circle at 20% 30%,
+            #ff1a1a 0%,
+            transparent 30%
+          ),
+          radial-gradient(circle at 80% 70%, #c80000 0%, transparent 35%),
+          radial-gradient(circle at 50% 10%, #ff4d4d 0%, transparent 28%),
+          radial-gradient(circle at 10% 80%, #ff3333 0%, transparent 32%),
+          radial-gradient(circle at 90% 20%, #e60000 0%, transparent 30%);
+        background-size: 600px 600px, 700px 700px, 500px 500px, 650px 650px,
+          550px 550px;
+        background-position: 0 0, 100px 200px, -50px -100px, 300px 400px,
+          -200px 100px;
+        opacity: 0.12;
+        animation: floatSpots 45s ease-in-out infinite alternate;
+        z-index: -1;
+        pointer-events: none;
+      }
+      @keyframes floatSpots {
+        0% {
+          background-position: 0 0, 100px 200px, -50px -100px, 300px 400px,
+            -200px 100px;
+        }
+        100% {
+          background-position: 50px 50px, 150px 250px, 0 -50px, 350px 450px,
+            -150px 150px;
+        }
+      }
+
+      /* Header */
+      header {
+        background: #fff;
+        padding: 12px 20px;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+        box-shadow: 0 4px 25px rgba(200, 0, 0, 0.15);
+        border-bottom: 3px solid #c80000;
+      }
+      .top-bar {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 15px;
+        max-width: 1600px;
+        margin: 0 auto;
+      }
+      .logo {
+        height: 65px;
+      }
+      /* .logo img {
+        height: 100%;
+        object-fit: contain;
+      } */
+      .menu-toggle {
+        display: none;
+        cursor: pointer;
+        font-size: 24px;
+        color: #c80000;
+        padding: 5px;
+      }
+      nav ul {
+        display: flex;
+        gap: 20px;
+        list-style: none;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      nav a {
+        color: #c80000;
+        text-decoration: none;
+        font-weight: 700;
+        font-size: 14px;
+        text-transform: uppercase;
+        padding: 8px 0;
+        position: relative;
+        transition: 0.3s;
+      }
+      nav a::after {
+        content: "";
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        width: 0;
+        height: 2px;
+        background: #c80000;
+        transition: 0.3s;
+      }
+      nav a:hover::after {
+        width: 100%;
+      }
+
+      /* Ticker */
+      .ticker {
+        background: #c80000;
+        color: #fff;
+        padding: 10px 0;
+        font-weight: 700;
+        overflow: hidden;
+        white-space: nowrap;
+      }
+      .ticker span {
+        display: inline-block;
+        animation: scrollLeft 100s linear infinite;
+        padding-left: 100%;
+        font-size: 15px;
+      }
+      @keyframes scrollLeft {
+        0% {
+          transform: translateX(0);
+        }
+        100% {
+          transform: translateX(-100%);
+        }
+      }
+
+      /* Live Info */
+      .live-info {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 8px 20px;
+        background: #111;
+        color: #fff;
+        font-size: 14px;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      /* Container */
+      .container {
+        max-width: 1600px;
+        margin: 20px auto;
+        padding: 0 15px;
+        display: grid;
+        grid-template-columns: 280px 1fr 320px;
+        gap: 20px;
+      }
+
+      /* Sidebar Toggle (Mobile) */
+      .sidebar-toggle {
+        position: fixed;
+        left: 15px;
+        top: 120px;
+        background: #c80000;
+        color: #fff;
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 22px;
+        cursor: pointer;
+        z-index: 999;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
+        display: none;
+      }
+
+      /* Live Video */
+      .live-video {
+        position: relative;
+        margin-bottom: 25px;
+        border-radius: 16px;
+        overflow: hidden;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      }
+      .live-badge {
+        position: absolute;
+        top: 15px;
+        left: 15px;
+        background: #c80000;
+        color: #fff;
+        padding: 10px 25px;
+        border-radius: 50px;
+        font-weight: bold;
+        font-size: 16px;
+        animation: flash 1.5s infinite;
+        z-index: 10;
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      }
+      @keyframes flash {
+        0%,
+        100% {
+          background: #c80000;
+        }
+        50% {
+          background: #ff1a1a;
+        }
+      }
+      .live-video video {
+        width: 100%;
+        height: 480px;
+        object-fit: cover;
+        display: block;
+      }
+      .live-video h2 {
+        background: #ffffff;
+        color: #ff0000;
+        padding: 16px;
+        text-align: center;
+        font-size: 19px;
+        margin: 0;
+      }
+
+      /* Cards & Grids */
+      .news-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 18px;
+      }
+      .news-card {
+        background: #fff;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s;
+      }
+      .news-card:hover {
+        transform: translateY(-8px);
+      }
+      .news-card img {
+        width: 100%;
+        height: 180px;
+        object-fit: cover;
+      }
+      .news-card h3 {
+        font-size: 16px;
+        margin: 12px 14px 8px;
+        line-height: 1.3;
+      }
+      .news-card p {
+        font-size: 13px;
+        color: #555;
+        margin: 0 14px 14px;
+      }
+
+      /* Section Headers */
+      .section-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin: 30px 0 15px;
+        padding: 0 5px;
+      }
+      .section-header h2 {
+        font-size: 22px;
+        color: #c80000;
+        font-weight: 700;
+        position: relative;
+        padding-left: 18px;
+      }
+      .section-header h2::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 6px;
+        height: 28px;
+        background: #c80000;
+        border-radius: 3px;
+      }
+
+      /* Mandi & Categories */
+      .categories {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 12px;
+        margin-bottom: 25px;
+      }
+      .cat-item {
+        background: #f8f8f8;
+        padding: 16px 10px;
+        text-align: center;
+        border-radius: 12px;
+        font-weight: bold;
+        color: #c80000;
+        transition: 0.3s;
+        font-size: 14px;
+      }
+      .cat-item:hover {
+        background: #c80000;
+        color: #fff;
+      }
+
+      .mandi-section {
+        background: linear-gradient(135deg, #c80000, #ff1a1a);
+        color: #fff;
+        padding: 20px;
+        border-radius: 16px;
+        margin: 0px 0;
+      }
+      .mandi-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+        gap: 16px;
+      }
+      .mandi-table {
+        width: 100%;
+        border-collapse: collapse;
+        color: #fff;
+      }
+      .mandi-table td {
+        padding: 4px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+      }
+      .mandi-table td:first-child {
+        text-align: left;
+        padding-right: 10px;
+      }
+      .mandi-table td:last-child {
+        text-align: center;
+        font-weight: bold;
+      }
+
+      /* Ads */
+      .ad-banner {
+        background: #f0f0f0;
+        border: 3px dashed #c80000;
+        color: #c80000;
+        text-align: center;
+        padding: 30px 10px;
+        border-radius: 12px;
+        font-weight: bold;
+        margin: 20px 0;
+      }
+
+      /* Footer */
+      footer {
+        background: #111;
+        color: #ccc;
+        padding: 60px 20px 40px;
+        margin-top: 80px;
+      }
+      .footer-grid {
+        max-width: 1400px;
+        margin: auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 40px;
+      }
+      .footer-col h3 {
+        color: #c80000;
+        margin-bottom: 10px;
+      }
+
+      /* Loader */
+      .loader {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #fff;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.5s;
+      }
+      .loader .spinner {
+        width: 80px;
+        height: 80px;
+        border: 8px solid #f3f3f3;
+        border-top: 8px solid #c80000;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+
+      /* RESPONSIVE DESIGN */
+      @media (max-width: 1200px) {
+        .container {
+          grid-template-columns: 1fr 1fr;
+        }
+        .right-sidebar {
+          grid-column: 1 / -1;
+        }
+        .news-grid {
+          grid-template-columns: repeat(3, 1fr);
+        }
+      }
+
+      @media (max-width: 992px) {
+        .container {
+          grid-template-columns: 1fr;
+          padding: 0 15px;
+        }
+        .left-sidebar {
+          position: fixed;
+          left: -353px;
+          top: 0;
+          height: 100vh;
+          width: 323px;
+          background: #fff;
+          z-index: 998;
+          padding: 90px 20px 20px;
+          overflow-y: auto;
+          box-shadow: 5px 0 20px rgba(0, 0, 0, 0.3);
+          transition: left 0.4s ease;
+        }
+        .left-sidebar.open {
+          left: 0;
+        }
+        .sidebar-toggle {
+          display: none;
+        }
+        .menu-toggle {
+          display: flex;
+        }
+        .top-bar {
+          flex-direction: row;
+          justify-content: space-between;
+          align-items: center;
+          gap: 0;
+        }
+        .logo {
+          height: 50px;
+          flex-shrink: 0;
+        }
+        nav ul {
+          display: none;
+        }
+        .live-video video {
+          height: 350px;
+        }
+        .news-grid {
+          grid-template-columns: 1fr 1fr;
+        }
+        nav ul {
+          gap: 14px;
+          font-size: 13px;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .top-bar {
+          justify-content: space-between;
+        }
+        .logo {
+          height: 45px;
+        }
+        .live-video video {
+          height: 280px;
+        }
+        .news-grid {
+          grid-template-columns: 1fr;
+        }
+        .categories {
+          grid-template-columns: 1fr 1fr;
+        }
+        .ticker span {
+          font-size: 14px;
+        }
+        .live-info {
+          padding: 6px 15px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .live-info {
+          font-size: 12px;
+          padding: 8px 12px;
+          text-align: center;
+          flex-direction: row;
+          gap: 5px;
+        }
+        .section-header h2 {
+          font-size: 19px;
+        }
+        .live-badge {
+          font-size: 14px;
+          padding: 8px 18px;
+        }
+        .categories {
+          grid-template-columns: 1fr;
+        }
+        .mandi-grid {
+          grid-template-columns: 1fr;
+        }
+        .ad-banner {
+          font-size: 14px;
+          padding: 20px 10px;
+        }
+        header {
+          padding: 8px 15px;
+        }
+        .top-bar {
+          padding: 0;
+        }
+        .logo {
+          height: 40px;
+        }
+        .menu-toggle {
+          font-size: 20px;
+        }
+      }
+      /* NEWS CHANNEL STYLE FIXED CATEGORY BUTTONS */
+      .categories-buttons-bar {
+        background: linear-gradient(to bottom, #c80000, #a00000);
+        padding: 7px 0;
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+        border-bottom: 3px solid #ff1744;
+      }
+
+      .categories-buttons-bar::-webkit-scrollbar {
+        display: none;
+      }
+
+      .cat-btn {
+        display: inline-block;
+        align-items: center;
+        background: rgb(255, 255, 255);
+        color: rgb(255, 0, 0);
+        padding: 7px 12px;
+        margin: 0 8px;
+        border-radius: 10px;
+        font-weight: 800;
+        font-size: 16px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+        backdrop-filter: blur(8px);
+        border: 2px solid transparent;
+        cursor: pointer;
+      }
+
+      .cat-btn:hover {
+        background: #ff1744;
+        color: #ffffff;
+        border: 2px solid #fff;
+        transform: translateY(-3px);
+        box-shadow: 0 8px 20px rgba(255, 23, 68, 0.6);
+      }
+
+      .cat-btn.active {
+        background: #ff0000;
+        color: #ffffff;
+        border: 2px solid #fff;
+        box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+      }
+      /* .tag-breaking {
+        padding: 3px 20px;
+        font-size: 16px;
+        font-weight: bold;
+        background: #a00000;
+        border-radius: 4px;
+        color: #ffffff;
+      } */
+      .logo-img{
+      height:45px;
+      width:auto;
+      }
+      @media (max-width: 600px) {
+        .cat-btn {
+          font-size: 12px;
+          padding: 3px 6px;
+          margin: 0px;
+        }
+
+        .logo-img{
+height:30px;
+width:auto;
+        }
+        /* .tag-breaking {
+            margin-top: -5px;
+            margin-bottom: -2px;
+          padding: 4px 5px;
+          font-size: 12px;
+          font-weight: bold;
+          background: #a00000;
+          border-radius: 4px;
+          color: #ffffff;
+        }
+       */
+
+      }
+      .close-sidebar {
+        font-size:28px;
+    background:none;
+    border:none;
+    float:right;
+    cursor:pointer;
+    background-color: #a00000;
+    border-radius: 10px;
+    padding: 10px;
+    color:#ffffff;
+    font-weight:bold;
+    margin-bottom:10px;
+      }
+
+      @media  ( min-width: 600px) {
+        .close-sidebar {
+          font-size: 28px;
+    background: none;
+    border: none;
+    float: right;
+    cursor: pointer;
+    background-color: #a0000013;
+    border-radius: 10px;
+    padding: 10px;
+    color: #ffffff00;
+    font-weight: bold;
+    margin-bottom: 10px;
+        }
+        
+        
+    }
+
+    
+    </style>
+  </head>
+  <body>
+    <div class="bg-spots"></div>
+
+    <div class="loader" id="loader">
+      <div class="spinner"></div>
+      <p>Loading E TIMES INDIA * 24...</p>
+    </div>
+
+   <%- include("layout/header") %>
+
+    <div class="live-info">
+      <div class="time" id="liveTime"></div>
+      <div class="weather" id="weatherDisplay">
+        <i class="fas fa-spinner fa-spin"></i> Detecting your location &
+        weather...
+      </div>
+    </div>
+    <!-- REPLACE YOUR OLD TICKER WITH THIS FIXED BUTTONS BAR -->
+    <div class="categories-buttons-bar">
+        
+  
+<%- include("layout/buttons") %>
+</div>
+   
+
+    <div class="container">
+      <aside class="left-sidebar">
+       
+         <button 
+  class="close-sidebar" 
+  onclick="closeSidebar()" 
+  style="
+    
+  "
+>
+  ×
+</button>
+
+         <script>
+  function closeSidebar() {
+    document.querySelector('.left-sidebar').classList.remove('open');
+  }
+
+  function openSidebar() {
+    document.querySelector('.left-sidebar').classList.add('open');
+  }
+
+  // When clicking Mandi Rates button
+  document.querySelector('.menu-toggle')
+    .addEventListener('click', openSidebar);
+</script>
+
+        <div class="mandi-section">
+          <h2>Mandi Rates Today</h2>
+          <div class="mandi-grid">
+            <div class="mandi-city">
+              <h3>Delhi</h3>
+              <table class="mandi-table">
+                <tr>
+                  <td>Wheat</td>
+                  <td>₹2,450/Qtl</td>
+                </tr>
+                <tr>
+                  <td>Rice</td>
+                  <td>₹3,800</td>
+                </tr>
+                <tr>
+                  <td>Maize</td>
+                  <td>₹1,950</td>
+                </tr>
+              </table>
+            </div>
+            <div class="mandi-city">
+              <h3>Mumbai</h3>
+              <table class="mandi-table">
+                <tr>
+                  <td>Tomato</td>
+                  <td>₹2,500</td>
+                </tr>
+                <tr>
+                  <td>Onion</td>
+                  <td>₹1,800</td>
+                </tr>
+                <tr>
+                  <td>Potato</td>
+                  <td>₹1,200</td>
+                </tr>
+              </table>
+            </div>
+            <div class="mandi-city">
+              <h3>Kolkata</h3>
+              <table class="mandi-table">
+                <tr>
+                  <td>Paddy</td>
+                  <td>₹2,100</td>
+                </tr>
+                <tr>
+                  <td>Sugarcane</td>
+                  <td>₹3,200</td>
+                </tr>
+                <tr>
+                  <td>Chilli</td>
+                  <td>₹4,500</td>
+                </tr>
+              </table>
+            </div>
+          </div>
+        </div>
+        <div class="ad-banner">ADVERTISEMENT<br />300x250</div>
+      </aside>
+
+      <main>
+       <div
+  style="
+    position: relative;
+    margin-top: 0px;
+    width: 100%;
+    max-width: 900px;
+    margin: auto;
+    background: #ffffff;
+    color: #ff0000;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+  "
+>
+  <!-- TOP BAR -->
+  <div
+    style="
+      position: absolute;
+      top: 7px;
+      left: 0;
+      width: 100%;
+      padding: 0 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      color: #a00000;
+    "
+  >
+    <img src="./logo/tag.png" alt="" height="40px">
+
+    <div
+      id="typingText"
+      style="
+        font-size: 18px;
+        font-weight: bold;
+        white-space: nowrap;
+        overflow: hidden;
+        border-right: 3px solid #31010105;
+        color: #a00000;
+      "
+    >
+      Loading...
+    </div>
+    <div></div>
+  </div>
+
+  <!-- VIDEO -->
+  <div style="position: relative; width: 100%; height: 0; padding-bottom: 56.25%; margin-top: 40px; border-radius: 5px; overflow: hidden;">
+    <% if (livevideo && livevideo.videoUrl) { %>
+      <% if (livevideo.videoUrl.includes('youtube.com') || livevideo.videoUrl.includes('youtu.be')) { %>
+        <iframe
+          src="<%= livevideo.videoUrl %>"
+          style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 5px;
+          "
+          allowfullscreen
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+          loading="lazy"
+        ></iframe>
+      <% } else { %>
+        <video
+          controls
+          poster="<%= livevideo.poster || 'https://i.imgur.com/0z8K8pP.jpg' %>"
+          style="
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 5px;
+          "
+          autoplay
+          muted
+          loop
+        >
+          <source
+            src="<%= livevideo.videoUrl %>"
+            type="video/mp4"
+          />
+          Your browser does not support the video tag.
+        </video>
+      <% } %>
+    <% } else { %>
+      <video
+        controls
+        poster="https://i.imgur.com/0z8K8pP.jpg"
+        style="
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          border-radius: 5px;
+        "
+      >
+        <source
+          src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+          type="video/mp4"
+        />
+      </video>
+    <% } %>
+  </div>
+
+  <!-- LIVE TIME (BOTTOM RIGHT) -->
+  <div
+    id="timeBox"
+    class="time"
+    style="
+      position: absolute;
+      top: 3px;
+      right: 10px;
+      font-size: 10px;
+      background: rgb(255, 255, 255);
+      padding: 0px;
+      border-radius: 4px;
+      color: #8b0000fd;
+      z-index: 20;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      flex-direction: column;
+    "
+  >
+    <img
+      src="/logo/logo.png"
+      style="width: 60px; height: auto;"
+    />
+    <span id="currentTime"></span>
+  </div>
+
+  <!-- MARQUEE -->
+  <div
+    style="
+      background: #a00000;
+      padding: 10px 0;
+      position: absolute;
+      bottom: -5px;
+      width: 100%;
+      font-size: 16px;
+      font-weight: bold;
+      white-space: nowrap;
+      overflow: hidden;
+      color: #fff;
+      z-index: 20;
+    "
+  >
+    <span
+      id="marqueeText"
+      style="
+        display: inline-block;
+        white-space: nowrap;
+        color: #fff;
+        position: relative;
+        left: 100%;
+      "
+    >
+      Loading...
+    </span>
+  </div>
+</div>
+
+<script>
+  // Dynamic data from EJS
+  const titleText = "<%= livevideo ? (livevideo.title || 'Election Results Live...') : 'Election Results Live...' %>";
+  const marqueeText = "<%= livevideo ? (livevideo.marqueeText || 'E TIMES INDIA LIVE — Bihar Polls | Lalu Feud | J&K Blast | Breaking Headlines | Top National News...') : 'E TIMES INDIA LIVE — Bihar Polls | Lalu Feud | J&K Blast | Breaking Headlines | Top National News...' %>";
+
+  // Update texts
+  document.getElementById("typingText").textContent = titleText;
+  document.getElementById("marqueeText").textContent = marqueeText;
+
+  function updateTime() {
+    const now = new Date();
+    
+    // 24-hour format with leading zeros
+    const time24 = now.toLocaleTimeString('en-GB', {
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false   // This removes AM/PM
+    });
+
+    document.getElementById("currentTime").innerText = time24;
+  }
+
+  // Update time every second
+  setInterval(updateTime, 1000);
+  updateTime();
+
+  /* FIXED MARQUEE */
+  let marquee = document.getElementById("marqueeText");
+  let pos = 100;
+
+  function scrollMarquee() {
+    pos -= 0.1; // speed
+    marquee.style.left = pos + "%";
+
+    if (pos < -100) {
+      pos = 100; // reset
+    }
+
+    requestAnimationFrame(scrollMarquee);
+  }
+  scrollMarquee();
+
+  /* TYPING ANIMATION */
+  let text = titleText;
+  let typingDiv = document.getElementById("typingText");
+  let index = 0;
+  let forward = true;
+
+  function typingAnimation() {
+    typingDiv.textContent = text.substring(0, index);
+
+    if (forward) {
+      index++;
+      if (index > text.length) forward = false;
+    } else {
+      index--;
+      if (index < 0) forward = true;
+    }
+
+    setTimeout(typingAnimation, 120);
+  }
+
+  typingAnimation();
+</script>
+<%
+function renderCards(newsArray, sectionName) { %>
+<div class="news-grid" id="<%= sectionName %>-section">
+  <% newsArray.forEach(news => { 
+     // Generate a unique suffix for script IDs using the news._id
+     const vidTimeId = `nowtime-${news._id}`;
+     const typingTextId = `typingText-${news._id}`;
+  %>
+   <a href="/<%= sectionName  %>/<%= news._id %>"
+   style="
+      display:block;
+      background:#fff;
+      border-radius:12px;
+      box-shadow:0 1.5px 14px #a000003a;
+      margin:18px;
+      max-width:360px;
+      overflow:hidden;
+      text-decoration:none;
+      color:#222;
+      border-left:7px solid #a00000;
+      position:relative;
+   ">
+   <!-- Ribbon/tag -->
+   <% if (news.mediaType === "image") { %>
+  <div style="position:absolute;top:8px;left:0;width:70px;height:26px;background:#a00000ee;color:#fff;
+      font-size:13px;font-weight:600;display:flex;align-items:center;justify-content:center;
+      border-radius:0 0 8px 0;z-index:30;">
+    NEW
+  </div>
+<% } %>
+
+   <% if(news.mediaType==='image' && news.image) { %>
+     <img src="<%= news.image %>" alt="<%= news.headline %>" loading="lazy"
+        style="width:100%;height:170px;object-fit:cover;">
+   <% } else if(news.mediaType==='video' && news.video) { %>
+    <% let typingTextId = "typing_" + news._id; %>
+<% let vidTimeId = "time_" + news._id; %>
+
+<div style="position: relative; width: 100%; max-width: 410px; background:#fff; border-radius:10px; overflow:hidden; box-shadow:0 0 15px rgba(0,0,0,0.19);">
+
+  <!-- TOP BAR -->
+ <!-- HEADER BAR -->
+<div style="position:absolute; top:0px; left:0; width:100%; padding:0 5px;
+     display:flex; justify-content:left; align-items:center;
+     z-index:10; color:#a00000; gap:8px;">
+
+  <img src="/logo/tag.png" height="20px" style="margin-top: 17px; ">
+  
+  <!-- Headline text -->
+  <div id="<%= typingTextId %>"
+       style="font-size:10px; font-weight:600; text-align:center;
+       white-space:nowrap; overflow:hidden; border-right:3px solid #a00000;
+       padding:0 5px; color:#a00000; max-width:260px;">
+  </div>
+</div>
+
+
+  <!-- Typing -->
+<script>
+(function(){
+var text = `<%- JSON.stringify(news.headline) %>`;
+  var el = document.getElementById("<%= typingTextId %>");
+  var i = 0;
+
+  function type(){
+    if(i <= text.length){
+      el.textContent = text.substring(0, i);
+      i++;
+      setTimeout(type, 28);
+    }
+  }
+  type();
+})();
+</script>
+
+
+  <!-- VIDEO -->
+  <video controls poster="<%= news.image %>" style="width:100%; margin-top:40px; border-radius:5px; max-height:200px; object-fit:cover;">
+    <source src="<%= news.video %>" type="video/mp4">
+  </video>
+
+  <!-- TIME BOX -->
+  <div style="position:absolute; top:3px; right:10px; font-size:10px; background:#fff; padding:3px 7px; border-radius:4px; color:#8b0000; z-index:20; display:flex; align-items:center; flex-direction:column; font-weight:bold;">
+    <img src="/logo/logo.png" style="width:44px; margin-bottom:2px;">
+    <span id="<%= vidTimeId %>"></span>
+  </div>
+
+  <!-- Time Script -->
+  <script>
+    (function(){
+      var span = document.getElementById("<%= vidTimeId %>");
+      function update(){
+        var d = new Date();
+        span.textContent = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+      }
+      update();
+      setInterval(update, 1000);
+    })();
+  </script>
+
+  <!-- MARQUEE -->
+  <div style="background:#a00000; padding:7px 0 7px 10px; position:absolute; bottom:-5px; width:100%; font-size:15px; font-weight:bold; white-space:nowrap; overflow:hidden; color:#fff; z-index:20;">
+    <span class="marquee" style="display:inline-block; animation:scroll 12s linear infinite;">
+      <%= news.description.length > 90 ? news.description.substring(0,90) + "..." : news.description %>
+    </span>
+  </div>
+</div>
+
+<style>
+@keyframes scroll {
+  from { transform: translateX(100%); }
+  to { transform: translateX(-100%); }
+}
+</style>
+
+   <% } else { %>
+     <img src="/logo/logo.png" alt="News" loading="lazy" style="width:100%;height:170px;object-fit:cover;">
+   <% } %>
+   <!-- Card body for both types -->
+   <div style="padding:15px 18px 13px 18px;">
+      <h3 style="margin-bottom:7px;font-size:1.09rem;font-weight:700;color:#a00000e0;">
+        <%= news.headline %>
+      </h3>
+      <p style="font-size:0.98rem;color:#222;margin-bottom:9px;">
+        <%= news.description.length>95?news.description.substr(0,92)+'...':news.description %>
+      </p>
+      <% if(news.location) { %>
+        <small style="color:#a0000080;">📍 <%= news.location %></small>
+      <% } %>
+      <br>
+      <small style="color:#a00000a2;font-size:11px;">
+        Updated <%= new Date(news.updatedAt||news.createdAt).toLocaleDateString() %>
+      </small>
+   </div>
+  </a>
+  <% }) %>
+</div>
+<% } %>
+
+<% // Section list and mapping: key, label, fallback for missing data
+   const sectionList = [
+    { key: 'business', label: 'Business' },
+  { key: 'crime', label: 'Crime' },
+  { key: 'education', label: 'Education' },
+  { key: 'entertainment', label: 'Entertainment' },
+  { key: 'environment', label: 'Environment' },
+  { key: 'health', label: 'Health' },
+  { key: 'politics', label: 'Politics' },
+  { key: 'science', label: 'Science' },
+  { key: 'sports', label: 'Sports' },
+  { key: 'technology', label: 'Technology' },
+  { key: 'world', label: 'World' }
+   ];
+%>
+
+<% sectionList.forEach(section => { %>
+  <!-- SECTION HEADER -->
+  <div class="section-header">
+    <h2><%= section.label %></h2>
+    <a href="#" style="color: #a00000; text-decoration: none">View All</a>
+  </div>
+  <!-- CARDS -->
+  <% renderCards((sections[section.key] || []).slice(0, 6), section.key); %>
+  <!-- AD BLOCK -->
+  <div style="width: 100%; margin: 20px 0; text-align: center">
+    <img src="/logo/logo.png" style="width: 100%; max-width: 900px; border-radius: 6px" />
+  </div>
+<% }) %>
+      </main>
+
+      <aside class="right-sidebar">
+        <h2
+          style="
+            background: #c80000;
+            color: #fff;
+            padding: 18px;
+            text-align: center;
+            border-radius: 12px;
+            margin: 0;
+          "
+        >
+          Trending
+        </h2>
+        <div style="padding: 15px">
+          <div style="padding: 12px; border-bottom: 1px solid #eee">
+            <h4 style="color: #c80000">Rohini Acharya Exit</h4>
+            <small>Live Updates</small>
+          </div>
+          <div style="padding: 12px; border-bottom: 1px solid #eee">
+            <h4 style="color: #c80000">Bihar NDA Win</h4>
+            <small>Nitish Oath Nov 17</small>
+          </div>
+          <div style="padding: 12px; border-bottom: 1px solid #eee">
+            <h4 style="color: #c80000">J&K Blast Probe</h4>
+            <small>NIA Takes Over</small>
+          </div>
+          <div style="padding: 12px; border-bottom: 1px solid #eee">
+            <h4 style="color: #c80000">Delhi Cafe Blast</h4>
+            <small>9 Killed in Explosion</small>
+          </div>
+          <div style="padding: 12px">
+            <h4 style="color: #c80000">Lalu Admitted to AIIMS</h4>
+            <small>Health Scare</small>
+          </div>
+        </div>
+        <div class="ad-banner">ADVERTISEMENT<br />300x600</div>
+      </aside>
+    </div>
+
+    <%- include("layout/footer") %>
+
+
+
+    <script>
+      // Live Time
+      function updateTime() {
+        const now = new Date();
+        const options = {
+          timeZone: "Asia/Kolkata",
+          hour12: true,
+          hour: "2-digit",
+          minute: "2-digit",
+          second: "2-digit",
+        };
+        document.getElementById("liveTime").innerText =
+          now.toLocaleString("en-US", options) + " IST";
+      }
+      setInterval(updateTime, 1000);
+      updateTime();
+      // === AUTO DETECT LOCATION + WEATHER (Free & No API Key) ===
+      function getWeather() {
+        if (navigator.geolocation) {
+          navigator.geolocation.getCurrentPosition(
+            async (pos) => {
+              const lat = pos.coords.latitude;
+              const lon = pos.coords.longitude;
+
+              try {
+                const res = await fetch(
+                  `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,weathercode&timezone=Asia/Kolkata`
+                );
+                const data = await res.json();
+                const temp = Math.round(data.current.temperature_2m);
+                const code = data.current.weathercode;
+
+                // Simple weather description
+                const weatherDesc = {
+                  0: "Clear",
+                  1: "Mainly Clear",
+                  2: "Partly Cloudy",
+                  3: "Overcast",
+                  45: "Fog",
+                  48: "Fog",
+                  51: "Light Drizzle",
+                  53: "Drizzle",
+                  55: "Heavy Drizzle",
+                  61: "Light Rain",
+                  63: "Rain",
+                  65: "Heavy Rain",
+                  71: "Light Snow",
+                  73: "Snow",
+                  75: "Heavy Snow",
+                  95: "Thunderstorm",
+                };
+                const desc = weatherDesc[code] || "Cloudy";
+
+                // Get city name (reverse geocoding - free)
+                const cityRes = await fetch(
+                  `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lon}&format=json`
+                );
+                const cityData = await cityRes.json();
+                const city =
+                  cityData.address.city ||
+                  cityData.address.town ||
+                  cityData.address.state_district ||
+                  "Your Location";
+
+                document.getElementById(
+                  "weatherDisplay"
+                ).innerHTML = `<i class="fas fa-map-marker-alt"></i> ${city}: ${temp}°C | ${desc}`;
+              } catch (err) {
+                document.getElementById(
+                  "weatherDisplay"
+                ).innerHTML = `<i class="fas fa-cloud-sun"></i> Weather unavailable`;
+              }
+            },
+            () => {
+              document.getElementById(
+                "weatherDisplay"
+              ).innerHTML = `<i class="fas fa-cloud-sun"></i> Delhi: 24°C | Haze`;
+            }
+          );
+        } else {
+          document.getElementById(
+            "weatherDisplay"
+          ).innerHTML = `<i class="fas fa-cloud-sun"></i> Delhi: 24°C | Haze`;
+        }
+      }
+      getWeather();
+      // Loader
+      window.onload = () => {
+        setTimeout(() => {
+          document.getElementById("loader").style.opacity = "0";
+          setTimeout(() => {
+            document.getElementById("loader").style.display = "none";
+          }, 600);
+        }, 1500);
+      };
+
+   
+    </script>
+  </body>
+</html>

@@ -1,0 +1,221 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>News Channel Login</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    :root {
+      --primary: #e50914; /* News Red */
+      --background: #ffffff;
+      --text-dark: #111;
+      --text-light: #777;
+      --card-bg: #ffffff;
+      --radius: 14px;
+      font-family: 'Montserrat', sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+      background: #ffffff;
+      position: relative;
+      overflow: hidden; /* keep animations inside */
+    }
+
+    /* Dark overlay */
+    body::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: rgba(255, 255, 255, 0);
+    }
+
+    .login-wrapper {
+      width: 100%;
+      max-width: 420px;
+      background: var(--card-bg);
+      border-radius: var(--radius);
+      padding: 30px;
+      position: relative;
+      z-index: 2;
+      box-shadow: 0 15px 40px rgba(0,0,0,0.2);
+      border-top: 6px solid var(--primary);
+      animation: fadeIn 0.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .logo {
+      display: block;
+      margin: 0 auto 18px;
+      padding: 15px;
+      width: 100%;
+            object-fit: cover;
+      border-radius: 10px;
+      box-shadow: 0 6px 20px rgba(229,9,20,0.4);
+    }
+
+    h2 {
+      text-align: center;
+      margin: 0 0 10px;
+      color: var(--text-dark);
+      font-weight: 700;
+      letter-spacing: 1px;
+    }
+
+    .tagline {
+      text-align: center;
+      font-size: 14px;
+      color: var(--text-light);
+      margin-bottom: 22px;
+    }
+
+    label {
+      font-size: 14px;
+      color: var(--text-dark);
+      font-weight: 600;
+      margin-bottom: 6px;
+      display: block;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      border-radius: var(--radius);
+      border: 1px solid #ddd;
+      margin-bottom: 16px;
+      font-size: 15px;
+    }
+
+    .btn {
+      width: 100%;
+      padding: 13px;
+      background: var(--primary);
+      color: white;
+      border: none;
+      border-radius: var(--radius);
+      font-size: 16px;
+      cursor: pointer;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: 0.2s;
+      margin-top: 10px;
+    }
+
+    .btn:hover {
+      background: #c20810;
+    }
+
+    .bottom-text {
+      text-align: center;
+      margin-top: 16px;
+      font-size: 14px;
+    }
+    .bottom-text a {
+      color: var(--primary);
+      font-weight: 600;
+      text-decoration: none;
+    }
+  /* Animated breaking-news background */
+    .animated-bg {
+      position: absolute;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .line {
+      position: absolute;
+      width: 140%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      opacity: 0.4;
+      animation: slide 6s linear infinite;
+    }
+
+    .line:nth-child(1) { top: 20%; animation-duration: 7s; }
+    .line:nth-child(2) { top: 40%; animation-duration: 9s; }
+    .line:nth-child(3) { top: 60%; animation-duration: 5s; }
+    .line:nth-child(4) { top: 80%; animation-duration: 8s; }
+
+    @keyframes slide {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+
+  /* Dotted animated background */
+    .dots-bg {
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle, rgba(255, 255, 255, 0.342) 2px, transparent 2px) 0 0 / 40px 40px,
+                  radial-gradient(circle, rgba(229, 9, 20, 0.555) 2px, transparent 2px) 20px 20px / 40px 40px;
+      animation: moveDots 12s linear infinite;
+      opacity: 0.32;
+      z-index: 0;
+    }
+
+    @keyframes moveDots {
+      0% { background-position: 0 0, 20px 20px; }
+      100% { background-position: 80px 80px, 60px 60px; }
+    }
+
+    /* merge with existing lines */
+    .animated-bg { position: absolute; inset: 0; z-index: 1; pointer-events: none; }
+
+  </style>
+</head>
+<body>
+
+  <div class="dots-bg"></div>
+
+  <div class="animated-bg">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+  </div>
+
+  <div class="animated-bg">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+  </div>
+
+  <div class="login-wrapper">
+    <img src="/logo/logo.png" class="logo" alt="News Channel Logo">
+
+    <h2>News Channel Login</h2>
+    <div class="tagline">Secure access for reporters & editors</div>
+
+    <form  method="post" action="/admin/auth/login">
+      <label>Email Address</label>
+      <input type="email" placeholder="yourmail@example.com" name="email" required>
+
+      <label>Password</label>
+      <input type="password" name="password" placeholder="•••••••" required>
+
+      <button class="btn">Sign In</button>
+
+      <div class="bottom-text">
+        Forgot your password? <a href="#">Reset</a><br>
+        New staff? <a href="#">Create account</a>
+      </div>
+    </form>
+  </div>
+
+</body>
+</html>

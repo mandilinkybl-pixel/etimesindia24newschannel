@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>News Portal | Login & Sign Up</title>
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <!-- Bootstrap CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+     :root {
+      --primary: #e50914;
+      --primary-dark: #c70810;
+      --success: #00c851;
+      --bg: #f9f9f9;
+      --card: #ffffff;
+      --text: #111;
+      --text-light: #666;
+      --border: #ddd;
+      --radius: 14px;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background: var(--bg);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      /* padding: 20px; */
+      position: relative;
+      overflow: hidden;
+    }
+    .back-btn {
+      position: absolute; top: 20px; left: 20px; z-index: 10;
+      background: rgba(255,255,255,0.95); color: var(--text);
+      padding: 10px 18px; border-radius: 30px; font-weight: 600;
+      text-decoration: none; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+      backdrop-filter: blur(10px); border: 1px solid rgba(0,0,0,0.08);
+      transition: all 0.3s; display: flex; align-items: center; gap: 8px;
+    }
+    .back-btn:hover { background: var(--primary); color: white; }
+    .back-btn::before { content: "Back"; }
+    .animated-bg { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 0; }
+    .line {
+      position: absolute; height: 3px; width: 150%;
+      background: linear-gradient(90deg, transparent, var(--primary), transparent);
+      opacity: 0.3; animation: slide linear infinite;
+    }
+    .line:nth-child(1){top:15%;animation-duration:8s}
+    .line:nth-child(2){top:35%;animation-duration:12s}
+    .line:nth-child(3){top:60%;animation-duration:10s}
+    .line:nth-child(4){top:85%;animation-duration:9s}
+    @keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+
+    .login-wrapper {
+      width: 100%; max-width: 440px;
+      background: var(--card);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+      border-top: 6px solid var(--primary);
+      position: relative; z-index: 2;
+      animation: fadeIn 0.6s ease-out;
+    }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(30px); } to { opacity:1; transform:translateY(0); } }
+
+    .logo { display: block; margin:0 auto; width:180px; padding:20px 0 10px; }
+    .header { text-align:center; padding:10px 30px 20px; }
+    h2 { font-size:26px; color:var(--text); margin-bottom:6px; font-weight:700; }
+    .tagline { font-size:14px; color:var(--text-light); }
+
+    .tab-box {
+      display: flex; background:#f0f0f0; margin:0 30px 24px;
+      border-radius:10px; overflow:hidden;
+      box-shadow: inset 0 2px 8px rgba(0,0,0,0.08);
+    }
+    .tab-btn {
+      flex:1; padding:14px; border:none; background:transparent;
+      font-weight:600; font-size:15px; color:var(--text-light);
+      cursor:pointer; transition:all 0.3s;
+    }
+    .tab-btn.active { background:var(--primary); color:white; }
+
+    .form-container { padding:0 30px 30px; }
+    .tab-pane { display:none; animation:fadeInForm 0.4s ease; }
+    .tab-pane.active { display:block; }
+    @keyframes fadeInForm { from {opacity:0; transform:translateY(10px);} to {opacity:1; transform:translateY(0);} }
+
+    label { display:block; margin-bottom:8px; font-weight:600; color:var(--text); font-size:14px; }
+    input {
+      width:100%; padding:14px; border:1px solid var(--border);
+      border-radius:var(--radius); background:#fafafa; font-size:15px;
+      margin-bottom:16px; transition:border 0.3s;
+    }
+    input:focus { outline:none; border-color:var(--primary); box-shadow:0 0 0 3px rgba(229,9,20,0.15); }
+
+    .otp-container {
+      display:flex; justify-content:center; gap:10px; margin:25px 0;
+    }
+    .otp-box {
+      width:50px; height:50px; text-align:center; font-size:20px;
+      font-weight:bold; border:2px solid #ddd; border-radius:10px;
+      background:#fff;
+    }
+    .otp-box:focus { border-color:var(--primary); outline:none; box-shadow:0 0 0 3px rgba(229,9,20,0.2); }
+
+    .btn {
+      width:100%; padding:15px; background:var(--primary); color:white;
+      border:none; border-radius:var(--radius); font-size:16px; font-weight:600;
+      cursor:pointer; transition:all 0.3s; margin-top:10px;
+      position:relative;
+    }
+    .btn:hover { background:var(--primary-dark); transform:translateY(-2px); }
+    .btn.loading::after {
+      content:''; position:absolute; width:20px; height:20px;
+      border:3px solid #fff; border-top-color:transparent;
+      border-radius:50%; animation:spin 1s linear infinite; right:20px;
+    }
+    @keyframes spin { to { transform:rotate(360deg); } }
+
+    .error-msg { color:#e50914; font-size:13px; margin-top:-10px; margin-bottom:10px; }
+    .success-msg { color:var(--success); font-weight:600; text-align:center; margin:15px 0; }
+
+    .bottom-text { text-align:center; margin-top:20px; font-size:14px; color:var(--text-light); }
+    .bottom-text a { color:var(--primary); font-weight:600; text-decoration:none; cursor:pointer; }
+    .resend-text { margin-top:15px; font-size:13px; color:var(--text-light); text-align:center; }
+    .resend-link { color:var(--primary); font-weight:600; cursor:pointer; }
+
+    @media (max-width:480px) {
+      .login-wrapper { margin:10px; }
+      .form-container, .header { padding-left:20px; padding-right:20px; }
+    }
+  </style>
+</head>
+<body>
+
+  <a href="javascript:history.back()" class="back-btn">Back</a>
+
+  <div class="animated-bg">
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+    <div class="line"></div>
+  </div>
+
+  <div class="login-wrapper">
+    <img src="/logo/logo.png" alt="News Portal" class="logo">
+    <div class="header">
+      <h2>News Portal</h2>
+      <div class="tagline">Secure access for journalists & editors</div>
+    </div>
+
+    <div class="tab-box">
+      <button class="tab-btn active" data-tab="login" type="button">Login</button>
+      <button class="tab-btn" data-tab="signup" type="button">Sign Up</button>
+    </div>
+
+    <div class="form-container">
+
+      <!-- LOGIN -->
+      <form id="login" class="tab-pane active" autocomplete="on">
+        <div id="login-error" class="error-msg"></div>
+        <label for="login-identifier">Login with Email or Phone</label>
+        <input type="text" id="login-identifier" 
+          placeholder="email@news.com or +919876543210"
+          required autocomplete="username"
+          data-bs-toggle="tooltip" title="Enter your registered email or phone">
+
+        <label for="login-password">Password</label>
+        <input type="password" id="login-password"
+          placeholder="Enter your password" required minlength="6"
+          autocomplete="current-password"
+          data-bs-toggle="tooltip" title="Enter your password">
+
+        <button type="submit" class="btn" id="login-btn">Sign In</button>
+
+        <div class="bottom-text">
+          Forgot password? <a href="/forgot">Reset here</a>
+        </div>
+      </form>
+
+      <!-- SIGNUP -->
+      <div id="signup" class="tab-pane">
+        <!-- Step 1 -->
+        <div id="signup-form">
+          <div id="signup-error" class="error-msg"></div>
+          <label for="signup-name">Full Name</label>
+          <input type="text" id="signup-name"
+            placeholder="John Doe" required minlength="2"
+            autocomplete="name"
+            data-bs-toggle="tooltip" title="Enter your full name">
+
+          <label for="signup-email">Email Address</label>
+          <input type="email" id="signup-email"
+            placeholder="john@news.com" required
+            autocomplete="email"
+            data-bs-toggle="tooltip" title="Enter a valid email address">
+
+          <label for="signup-phone">Phone Number</label>
+          <input type="tel" id="signup-phone"
+            placeholder="+919876543210" required
+            autocomplete="tel"
+            data-bs-toggle="tooltip" title="Enter a valid phone number">
+
+          <label for="signup-password">Create Password</label>
+          <input type="password" id="signup-password"
+            placeholder="Min 6 characters" required minlength="6"
+            autocomplete="new-password"
+            data-bs-toggle="tooltip" title="Password should be at least 6 characters">
+
+          <button type="button" class="btn" id="send-otp-btn">Send OTP to Email</button>
+
+          <div class="bottom-text">
+            Already registered? <a onclick="switchTab('login')" role="button">Sign In</a>
+          </div>
+        </div>
+
+        <!-- Step 2 (OTP) -->
+        <div id="signup-otp" style="display:none;">
+          <div class="success-msg" id="otp-success-msg"></div>
+          <p>Enter 6-digit OTP sent to<br><strong id="otp-sent-to"></strong></p>
+          <div class="otp-container">
+            <input type="text" class="otp-box" maxlength="1"
+              inputmode="numeric" pattern="[0-9]*" aria-label="OTP Digit 1">
+            <input type="text" class="otp-box" maxlength="1"
+              inputmode="numeric" pattern="[0-9]*" aria-label="OTP Digit 2">
+            <input type="text" class="otp-box" maxlength="1"
+              inputmode="numeric" pattern="[0-9]*" aria-label="OTP Digit 3">
+            <input type="text" class="otp-box" maxlength="1"
+              inputmode="numeric" pattern="[0-9]*" aria-label="OTP Digit 4">
+            <input type="text" class="otp-box" maxlength="1"
+              inputmode="numeric" pattern="[0-9]*" aria-label="OTP Digit 5">
+            <input type="text" class="otp-box" maxlength="1"
+              inputmode="numeric" pattern="[0-9]*" aria-label="OTP Digit 6">
+          </div>
+          <button type="button" class="btn" id="verify-btn">Complete Registration</button>
+          <div class="resend-text">
+            Didn't receive? <span class="resend-link" id="resend-link" role="button">Resend OTP</span>
+            <span id="timer"></span>
+          </div>
+          <div id="signup-success" class="success-msg"></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+<!-- Bootstrap JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API_BASE = '/api/auth';
+
+function switchTab(tab) {
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === tab));
+  document.querySelectorAll('.tab-pane').forEach(p => p.classList.toggle('active', p.id === tab));
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn =>
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab))
+);
+
+// Initialize Bootstrap tooltips
+document.addEventListener('DOMContentLoaded', function () {
+  var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+  tooltipTriggerList.forEach(function (tooltipTriggerEl) {
+    new bootstrap.Tooltip(tooltipTriggerEl)
+  });
+});
+
+// OTP input auto move and paste
+document.querySelectorAll('.otp-box').forEach((box, i, boxes) => {
+  box.addEventListener('input', e => {
+    if (e.target.value.length === 1 && i < boxes.length - 1) boxes[i + 1].focus();
+  });
+  box.addEventListener('paste', (e) => {
+    const paste = (e.clipboardData || window.clipboardData).getData('text');
+    if (/^\d{6}$/.test(paste)) {
+      paste.split('').forEach((char, idx) => {
+        if (boxes[idx]) boxes[idx].value = char;
+      });
+      boxes[5].focus();
+    }
+    e.preventDefault();
+  });
+  box.addEventListener('keydown', e => {
+    if ((e.key === 'Backspace' || e.key === 'Delete') && !box.value && i > 0) boxes[i-1].focus();
+  });
+});
+
+// Send OTP
+async function sendOtp() {
+  const btn = document.getElementById('send-otp-btn');
+  const error = document.getElementById('signup-error');
+  error.textContent = '';
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const phone = document.getElementById('signup-phone').value.trim();
+  const password = document.getElementById('signup-password').value;
+
+  if (!name || !email || !phone || password.length < 6) {
+    error.textContent = 'Please fill all fields correctly';
+    return;
+  }
+
+  btn.classList.add('loading');
+  btn.textContent = 'Sending...';
+
+  try {
+    const res = await fetch(`${API_BASE}/send-otp`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, email, phone, password }),
+    });
+
+    let data;
+    try { data = await res.json(); } catch {
+      error.textContent = 'Server error: Invalid response.';
+      return;
+    }
+    if (res.ok && data.success) {
+      document.getElementById('otp-sent-to').textContent = email;
+      document.getElementById('signup-form').style.display = 'none';
+      document.getElementById('signup-otp').style.display = 'block';
+      document.getElementById('otp-success-msg').textContent = data.message || "OTP sent successfully!";
+      document.getElementById('signup-success').textContent = "";
+      startTimer();
+      document.querySelectorAll('.otp-box').forEach(box => box.value = "");
+      document.querySelector('.otp-box').focus();
+    } else {
+      error.textContent = data.message || 'Failed to send OTP';
+    }
+  } catch (err) {
+    error.textContent = 'Network error. Try again.';
+  } finally {
+    btn.classList.remove('loading');
+    btn.textContent = 'Send OTP to Email';
+  }
+}
+document.getElementById('send-otp-btn').onclick = sendOtp;
+document.getElementById('resend-link').onclick = sendOtp;
+
+function startTimer() {
+  let time = 60;
+  const timerEl = document.getElementById('timer');
+  timerEl.textContent = '';
+  const interval = setInterval(() => {
+    timerEl.textContent = time > 0 ? ` (Resend in ${time}s)` : '';
+    if (--time < 0) clearInterval(interval);
+  }, 1000);
+}
+
+// Verify OTP
+async function verifyOtp() {
+  const btn = document.getElementById('verify-btn');
+  btn.classList.add('loading');
+  btn.textContent = 'Verifying...';
+
+  const otp = Array.from(document.querySelectorAll('.otp-box')).map(b => b.value).join('');
+  if (otp.length !== 6 || !/^\d{6}$/.test(otp)) {
+    alert('Please enter full 6-digit OTP');
+    btn.classList.remove('loading');
+    btn.textContent = 'Complete Registration';
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API_BASE}/signup`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ otp }),
+      credentials: 'include'
+    });
+
+    let data;
+    try { data = await res.json(); } catch {
+      alert('Server error: Invalid response.');
+      return;
+    }
+    if (res.ok && data.success) {
+      // Show success message then redirect to login page as per backend
+      document.getElementById('signup-success').textContent = data.message || 'Account created!';
+      setTimeout(() => {
+        window.location.href = data.redirectUrl || '/login';
+      }, 2000);
+    } else {
+      alert(data.message || 'Invalid OTP');
+    }
+  } catch (err) {
+    alert('Network error. Try again.');
+  } finally {
+    btn.classList.remove('loading');
+    btn.textContent = 'Complete Registration';
+  }
+}
+document.getElementById('verify-btn').onclick = verifyOtp;
+
+// Login
+// Login
+document.getElementById('login').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('login-btn');
+  const error = document.getElementById('login-error');
+  error.textContent = '';
+
+  const identifier = document.getElementById('login-identifier').value.trim();
+  const password = document.getElementById('login-password').value;
+
+  btn.classList.add('loading');
+  btn.textContent = 'Signing in...';
+
+  try {
+    const res = await fetch(`${API_BASE}/login`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ identifier, password }),
+      credentials: 'include'
+    });
+
+    let data;
+    try { data = await res.json(); } catch {
+      error.textContent = 'Server error: Invalid response.';
+      return;
+    }
+    if (res.ok && data.success) {
+      window.location.href = '/';
+    } else {
+      error.textContent = data.message || 'Login failed';
+    }
+  } catch (err) {
+    error.textContent = 'Network error. Try again.';
+  } finally {
+    btn.classList.remove('loading');
+    btn.textContent = 'Sign In';
+  }
+});
+</script>
+</body>
+</html>

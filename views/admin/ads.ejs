@@ -1,0 +1,158 @@
+<%- include("public/header") %>
+
+<div class="main-content">
+  <div class="container py-4" style="max-width:900px">
+
+    <h2 class="mb-4 fw-bold text-danger text-center">Manage Ads</h2>
+
+    <!-- Create Form -->
+    <form action="/admin/ads/create" method="POST" enctype="multipart/form-data" class="border p-4 rounded shadow-sm">
+      
+      <div class="mb-3">
+        <label class="form-label fw-bold">Title</label>
+        <input type="text" name="title" class="form-control" required />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Upload Image or Video</label>
+        <input type="file" name="media" accept="image/*,video/*" class="form-control" required />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Redirect Link (optional)</label>
+        <input type="text" name="link" class="form-control" placeholder="https://example.com" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label fw-bold">Status</label>
+        <select class="form-control" name="status">
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+        </select>
+      </div>
+
+      <button class="btn btn-success w-100 mt-3">Create Ads</button>
+    </form>
+
+    <hr class="my-4" />
+
+    <!-- Ads List -->
+    <h4 class="fw-bold mb-3">All Ads</h4>
+
+    <table class="table table-bordered">
+      <thead class="table-dark">
+        <tr>
+          <th>Title</th>
+          <th>Media</th>
+          <th>Status</th>
+          <th>Link</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <% ads.forEach(ad => { %>
+        <tr>
+          <td><%= ad.title %></td>
+
+          <td style="width:250px">
+            <% if (ad.mediaType === "image") { %>
+              <img src="/<%= ad.mediaUrl %>" style="width:120px; border-radius:5px" />
+            <% } else { %>
+              <video src="/<%= ad.mediaUrl %>" style="width:150px" controls></video>
+            <% } %>
+          </td>
+
+          <td><span class="badge bg-<%= ad.status === 'active' ? 'success' : 'secondary' %>">
+            <%= ad.status %>
+          </span></td>
+
+          <td>
+            <% if (ad.link) { %>
+              <a href="<%= ad.link %>" target="_blank">Open</a>
+            <% } else { %>
+              No Link
+            <% } %>
+          </td>
+
+          <td>
+            <!-- EDIT BUTTON -->
+            <button class="btn btn-warning btn-sm"
+                    data-bs-toggle="modal"
+                    data-bs-target="#editModal_<%= ad._id %>">Edit</button>
+
+            <!-- DELETE -->
+            <a href="/admin/ads/delete/<%= ad._id %>"
+               onclick="return confirm('Are you sure?')"
+               class="btn btn-danger btn-sm">Delete</a>
+          </td>
+        </tr>
+
+        <!-- ===================== EDIT MODAL ===================== -->
+
+        <div class="modal fade" id="editModal_<%= ad._id %>" tabindex="-1">
+          <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+
+              <form action="/admin/ads/update/<%= ad._id %>" method="POST" enctype="multipart/form-data">
+
+                <div class="modal-header">
+                  <h5 class="modal-title">Edit Ads</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Title</label>
+                    <input type="text" class="form-control" name="title" value="<%= ad.title %>" required>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Current Media</label><br>
+
+                    <% if (ad.mediaType === "image") { %>
+                      <img src="/<%= ad.mediaUrl %>" style="width:150px; margin-bottom:10px;">
+                    <% } else { %>
+                      <video src="/<%= ad.mediaUrl %>" style="width:180px;" controls></video>
+                    <% } %>
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Change Media (optional)</label>
+                    <input type="file" class="form-control" name="media" accept="image/*,video/*">
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Redirect Link</label>
+                    <input type="text" class="form-control" name="link" value="<%= ad.link %>">
+                  </div>
+
+                  <div class="mb-3">
+                    <label class="form-label fw-bold">Status</label>
+                    <select class="form-control" name="status">
+                      <option value="active" <%= ad.status === "active" ? "selected" : "" %>>Active</option>
+                      <option value="inactive" <%= ad.status === "inactive" ? "selected" : "" %>>Inactive</option>
+                    </select>
+                  </div>
+
+                </div>
+
+                <div class="modal-footer">
+                  <button type="submit" class="btn btn-primary">Save Changes</button>
+                </div>
+
+              </form>
+
+            </div>
+          </div>
+        </div>
+
+        <% }) %>
+      </tbody>
+
+    </table>
+  </div>
+</div>
+
+<%- include("public/footer") %>

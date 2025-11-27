@@ -1,0 +1,260 @@
+<%- include("public/header") %>
+
+<style>
+  .video-preview {
+    position: relative;
+    width: 100%;
+    height: 400px;
+    background: #000;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  }
+  .video-preview video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+  .overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    color: white;
+    font-family: 'Arial Black', Arial, sans-serif;
+  }
+
+  /* Top Bar */
+  .top-bar {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 50px;
+    background: linear-gradient(to bottom, rgb(255, 255, 255), rgb(255, 255, 255));
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 20px;
+  }
+  .top-bar .headline {
+    font-size: 1.8rem;
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    animation: typing 10s steps(60, end) infinite alternate;
+  }
+  @keyframes typing {
+    0% { width: 0; }
+    90% { width: 100%; }
+    100% { width: 100%; }
+  }
+
+  /* Breaking Badge */
+  .breaking-badge {
+    position: absolute;
+    top: 20px; left: 1px;
+    height: 40px;
+  }
+
+  /* Logo + Live Time */
+  .logo-time {
+    position: absolute;
+    top: 10px; 
+    right: 5px;
+  }
+  .logo-time img {
+    height: 20px;
+  }
+  .live-time {
+    color: rgb(189, 2, 2);
+    font-size: 11px;
+    font-weight: bold;
+    background: white;
+    padding: 2px 6px;
+    border-radius: 4px;
+    display: inline-block;
+    margin-top: 2px;
+  }
+
+  /* Bottom Ticker */
+  .bottom-ticker {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 30px;
+    background: rgb(139, 0, 0);
+    overflow: hidden;
+  }
+  .ticker-text {
+    display: inline-block;
+    white-space: nowrap;
+    font-size: 18px;
+    font-weight: bold;
+    color: white;
+    padding-left: 100%;
+    animation: scroll-left 35s linear infinite;
+  }
+  @keyframes scroll-left {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-100%); }
+  }
+</style>
+
+<div class="main-content">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <h2 class="fw-bold text-danger"><%= title %> News</h2>
+    <a href="/admin/<%= title %>/create" class="btn btn-danger btn-lg">
+      <i class="bi bi-plus-circle"></i> Add New News
+    </a>
+  </div>
+
+  <% if (success && success.length) { %>
+    <div class="alert alert-success alert-dismissible fade show"><%= success %><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+  <% } %>
+  <% if (error && error.length) { %>
+    <div class="alert alert-danger alert-dismissible fade show"><%= error %><button type="button" class="btn-close" data-bs-dismiss="alert"></button></div>
+  <% } %>
+
+  <div class="row g-4">
+    <% if (news.length === 0) { %>
+      <div class="col-12 text-center py-5">
+        <p class="text-muted fs-4">No news found. <a href="/admin/<%= title %>/create">Create one now</a></p>
+      </div>
+    <% } else { %>
+      <% news.forEach(n => { %>
+
+        <!-- VIDEO NEWS CARD (TV Style with Overlay) -->
+        <% if (n.mediaType === 'video' && n.video) { %>
+          <div class="col-lg-4 col-md-6">
+            <div class="card bg-dark text-white border-0 shadow-lg h-100">
+              <div class="video-preview">
+                <video controls loop muted playsinline>
+                  <source src="<%= n.video %>" type="video/mp4">
+                  Your browser does not support video.
+                </video>
+
+                <div class="overlay">
+                  <div class="top-bar">
+                    <div class="headline"><%= n.headline %></div>
+                  </div>
+
+                  <img src="/logo/tag.png" class="breaking-badge" alt="Breaking">
+
+                  <div class="logo-time">
+                    <img src="/logo/logo.png" alt="Logo">
+                    <div class="live-time" data-id="<%= n._id %>"><%= new Date().toLocaleTimeString('en-IN', {hour: '2-digit', minute:'2-digit', second:'2-digit'}) %></div>
+                  </div>
+
+                  <div class="bottom-ticker">
+                    <div class="ticker-text">
+                      <%= n.location %>   |   BREAKING: <%= n.headline %>   |   LATEST UPDATES   |  
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="card-body">
+                <h5 class="card-title"><%= n.headline %></h5>
+                <p class="text-muted small"><%= n.location %></p>
+                <p><%= n.description.substring(0, 100) %>...</p>
+
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                  <a href="/admin/<%= title %>/edit/<%= n._id %>" class="btn btn-outline-light btn-sm">Edit</a>
+                  <button onclick="deleteNews('<%= n._id %>')" class="btn btn-outline-danger btn-sm">Delete</button>
+                  <a href="/admin/<%= title %>/download-overlay/<%= n._id %>" class="btn btn-success btn-sm">
+                    Download with Overlay
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        <!-- IMAGE NEWS CARD (Normal Style) -->
+        <% } else if (n.mediaType === 'image' && n.image) { %>
+          <div class="col-lg-4 col-md-6">
+            <div class="card shadow-sm h-100 border-0">
+              <img src="<%= n.image %>" class="card-img-top" style="height: 200px; object-fit: cover;" alt="<%= n.headline %>">
+
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title fw-bold"><%= n.headline %></h5>
+                <p class="text-muted small"><%= n.location %></p>
+                <p class="card-text flex-grow-1"><%= n.description.substring(0, 100) %>...</p>
+
+                <div class="d-flex justify-content-between align-items-center mt-3">
+                  <span class="badge bg-<%= n.status === 'published' ? 'success' : 'warning' %>">
+                    <%= n.status.toUpperCase() %>
+                  </span>
+                  <small class="text-muted"><%= new Date(n.createdAt).toLocaleDateString() %></small>
+                </div>
+
+                <div class="mt-3">
+                  <a href="/admin/<%= title %>/edit/<%= n._id %>" class="btn btn-outline-primary btn-sm">Edit</a>
+                  <button onclick="deleteNews('<%= n._id %>')" class="btn btn-outline-danger btn-sm">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        <!-- NO MEDIA FALLBACK -->
+        <% } else { %>
+          <div class="col-lg-4 col-md-6">
+            <div class="card shadow-sm h-100 border-0">
+              <div class="bg-light text-center py-5">
+                <i class="bi bi-file-earmark-text display-1 text-muted"></i>
+              </div>
+              <div class="card-body d-flex flex-column">
+                <h5 class="card-title fw-bold"><%= n.headline %></h5>
+                <p class="text-muted small"><%= n.location %></p>
+                <p class="card-text flex-grow-1"><%= n.description.substring(0, 100) %>...</p>
+                <div class="mt-auto">
+                  <a href="/admin/<%= title %>/edit/<%= n._id %>" class="btn btn-outline-primary btn-sm">Edit</a>
+                  <button onclick="deleteNews('<%= n._id %>')" class="btn btn-outline-danger btn-sm">Delete</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        <% } %>
+
+      <% }) %>
+    <% } %>
+  </div>
+</div>
+
+<!-- Live Clock for Video Cards -->
+<script>
+  function updateClocks() {
+    const time = new Date().toLocaleTimeString('en-IN', {
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit',
+      hour12: false
+    });
+    document.querySelectorAll('.live-time').forEach(el => {
+      el.textContent = time;
+    });
+  }
+  updateClocks();
+  setInterval(updateClocks, 1000);
+</script>
+
+<!-- Delete Function -->
+<script>
+  function deleteNews(id) {
+    if (confirm("Are you sure you want to delete this news permanently?")) {
+      fetch(`/admin/<%= title %>/${id}`, { 
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' }
+      })
+      .then(res => res.json())
+      .then(data => {
+        if (data.success) {
+          location.reload();
+        } else {
+          alert("Error: " + (data.message || "Something went wrong"));
+        }
+      })
+      .catch(err => alert("Network error"));
+    }
+  }
+</script>
+
+<%- include("public/footer") %>

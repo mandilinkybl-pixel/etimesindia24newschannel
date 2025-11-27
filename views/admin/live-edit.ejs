@@ -1,0 +1,252 @@
+<%- include("public/header") %>
+
+<div class="main-content">
+<style>
+    .card { background: #ffffff; border: 2px solid #c80000; }
+    .form-control, .form-check-input { background: #333; border: 1px solid #c80000; color: #fff; }
+    .preview-container { 
+      position: relative;
+      margin-top: 0px;
+      width: 100%;
+      max-width: 900px; 
+      margin: auto; 
+      background: #ffffff; 
+      color: #ff0000; 
+      border-radius: 10px; 
+      overflow: hidden; 
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.5);
+    }
+    .video-container { 
+      position: relative; 
+      width: 100%; 
+      height: 0; 
+      padding-bottom: 56.25%; 
+      margin-top: 40px; 
+      border-radius: 10px; 
+      overflow: hidden; 
+    }
+    .video-container iframe, 
+    .video-container video { 
+      position: absolute; 
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%; 
+      border-radius: 10px; 
+    }
+    .top-bar { 
+      position: absolute;
+      top: 7px;
+      left: 0;
+      width: 100%;
+      padding: 0 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      z-index: 10;
+      color: #a00000;
+    }
+    #typingText { 
+      font-size: 18px; 
+      font-weight: bold; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      border-right: 3px solid #31010105; 
+      color: #a00000; 
+    }
+    #timeBox { 
+      position: absolute; 
+      top: 3px; 
+      right: 10px; 
+      font-size: 10px; 
+      background: rgb(255, 255, 255); 
+      padding: 0px; 
+      border-radius: 4px; 
+      color: #8b0000fd; 
+      z-index: 20; 
+      font-weight: bold; 
+      display: flex; 
+      align-items: center; 
+      flex-direction: column; 
+    }
+    .marquee { 
+      background: #a00000; 
+      padding: 10px 0; 
+      position: absolute; 
+      bottom: -5px; 
+      width: 100%; 
+      font-size: 16px; 
+      font-weight: bold; 
+      white-space: nowrap; 
+      overflow: hidden; 
+      color: #fff; 
+      z-index: 20; 
+    }
+    #marqueeText { 
+      display: inline-block; 
+      white-space: nowrap; 
+      color: #fff; 
+      position: relative; 
+      left: 100%; 
+    }
+    .form-text { color: #ccc !important; }
+  </style>
+
+<div class="card shadow">
+  <div class="card-header text-center bg-danger text-white">
+    <h3>MAIN LIVE VIDEO CONTROL PANEL</h3>
+    <small>Only one video is active at a time (Upload file OR enter URL)</small>
+  </div>
+  <div class="card-body">
+    <% if (messages && messages.success) { %>
+      <div class="alert alert-success"><%= messages.success %></div>
+    <% } %>
+    <% if (messages && messages.error) { %>
+      <div class="alert alert-danger"><%= messages.error %></div>
+    <% } %>
+
+    <form action="/admin/main" method="POST" enctype="multipart/form-data">
+      <div class="mb-3">
+        <label class="form-label">Title (Typing Text Above Video)</label>
+        <input type="text" name="title" class="form-control" value="<%= live?.title || '' %>" required />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Bottom Marquee Text</label>
+        <textarea name="marqueeText" class="form-control" rows="3" required><%= live?.marqueeText || '' %></textarea>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Video Upload (Raw MP4/WebM - Optional)</label>
+        <input type="file" name="videoFile" accept="video/*" class="form-control" />
+        <small class="form-text">Upload raw video file (prioritized over URL below)</small>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Video URL (YouTube Embed or Direct MP4 - Optional)</label>
+        <input type="text" name="videoUrl" class="form-control" value="<%= live?.videoUrl || '' %>" 
+               placeholder="https://www.youtube.com/embed/abc123 OR https://yoursite.com/live.mp4" />
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Poster Image Upload (Optional)</label>
+        <input type="file" name="posterFile" accept="image/*" class="form-control" />
+        <small class="form-text">Upload poster image (prioritized over URL below)</small>
+      </div>
+
+      <div class="mb-3">
+        <label class="form-label">Poster URL (Optional)</label>
+        <input type="url" name="posterUrl" class="form-control" value="<%= live?.poster || '' %>" 
+               placeholder="https://example.com/poster.jpg OR leave blank" />
+      </div>
+
+      <div class="mb-3 form-check">
+        <input type="checkbox" name="isActive" class="form-check-input" <%= live?.isActive !== false ? 'checked' : '' %> />
+        <label class="form-check-label">Show Live Video on Homepage</label>
+      </div>
+
+      <div class="mb-4">
+        <label class="form-label">Auto Stop Date (Optional)</label>
+        <input type="datetime-local" name="expiresAt" class="form-control" value="<%= live?.expiresAt ? live.expiresAt.toISOString().slice(0,16) : '' %>" />
+      </div>
+
+      <div class="text-center">
+        <button type="submit" class="btn btn-primary text-white">
+          <%= live ? 'UPDATE' : 'CREATE' %> LIVE VIDEO
+        </button>
+      </div>
+    </form>
+
+    <!-- Live Preview -->
+    <% if (live && live.videoUrl) { %>
+    <hr style="border-color:#c80000;">
+    <h4 class="text-center text-danger">🔴 LIVE PREVIEW</h4>
+    <div class="preview-container">
+      <!-- TOP BAR -->
+      <div class="top-bar">
+        <img src="/logo/tag.png" alt="Tag" height="40px">
+        <div id="typingText">Loading...</div>
+        <div></div>
+      </div>
+
+      <!-- VIDEO CONTAINER -->
+      <div class="video-container">
+        <% if (live.videoUrl.includes('youtube.com') || live.videoUrl.includes('youtu.be')) { %>
+          <iframe src="<%= live.videoUrl %>" allowfullscreen allow="autoplay; fullscreen"></iframe>
+        <% } else { %>
+          <video controls poster="<%= live.poster || 'https://i.imgur.com/0z8K8pP.jpg' %>" autoplay muted loop>
+            <source src="<%= live.videoUrl %>" type="video/mp4" />
+            Your browser does not support the video tag.
+          </video>
+        <% } %>
+      </div>
+
+      <!-- LIVE TIME (BOTTOM RIGHT) -->
+      <div id="timeBox" class="time">
+        <img src="/logo/logo.png" style="width: 60px; height: auto;" alt="Logo" />
+        <span id="currentTime"></span>
+      </div>
+
+      <!-- MARQUEE -->
+      <div class="marquee">
+        <span id="marqueeText">Loading...</span>
+      </div>
+    </div>
+
+    <script>
+      // Set dynamic content
+      const titleText = "<%= live.title || '' %>";
+      const marqueeText = "<%= live.marqueeText || '' %>";
+      document.getElementById("typingText").textContent = titleText;
+      document.getElementById("marqueeText").textContent = marqueeText;
+
+      // Real-time clock
+      function updateTime() {
+        const now = new Date();
+        const time24 = now.toLocaleTimeString('en-GB', {
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        });
+        document.getElementById("currentTime").innerText = time24;
+      }
+      setInterval(updateTime, 1000);
+      updateTime();
+
+      // Smooth marquee scroll
+      let marqueePos = 100;
+      function scrollMarquee() {
+        marqueePos -= 0.1;
+        document.getElementById("marqueeText").style.left = marqueePos + "%";
+        if (marqueePos < -100) marqueePos = 100;
+        requestAnimationFrame(scrollMarquee);
+      }
+      scrollMarquee();
+
+      // Typing animation for title
+      let typingIndex = 0;
+      let typingForward = true;
+      function typingAnimation() {
+        const typingDiv = document.getElementById("typingText");
+        typingDiv.textContent = titleText.substring(0, typingIndex);
+        if (typingForward) {
+          typingIndex++;
+          if (typingIndex > titleText.length) typingForward = false;
+        } else {
+          typingIndex--;
+          if (typingIndex < 0) typingForward = true;
+        }
+        setTimeout(typingAnimation, 120);
+      }
+      typingAnimation();
+    </script>
+    <% } else { %>
+    <hr style="border-color:#c80000;">
+    <div class="text-center text-danger">No video configured yet. Save to see preview!</div>
+    <% } %>
+  </div>
+</div>
+</div>
+
+<%- include("public/footer") %>

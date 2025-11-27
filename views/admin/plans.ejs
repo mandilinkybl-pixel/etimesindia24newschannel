@@ -1,0 +1,100 @@
+<%- include("public/header") %>
+  <div class="main-content">
+<div class="container mt-5">
+
+  <h2 class="mb-4">Subscription Plans</h2>
+
+  <!-- ============================
+       FORM (Create + Edit)
+  ============================ -->
+  <div class="card p-4 mb-4">
+
+    <h4><%= isEdit ? "Edit Plan" : "Create New Plan" %></h4>
+
+    <form action="/admin/subscription-plans/save" method="POST">
+
+      <!-- Hidden ID (only for edit) -->
+      <% if (isEdit) { %>
+        <input type="hidden" name="id" value="<%= editPlan._id %>">
+      <% } %>
+
+      <div class="mb-3">
+        <label class="fw-bold">Plan Name</label>
+        <input type="text" name="name" class="form-control"
+          value="<%= isEdit ? editPlan.name : '' %>" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="fw-bold">Duration (Months)</label>
+        <input type="number" name="durationMonths" class="form-control"
+          value="<%= isEdit ? editPlan.durationMonths : '' %>" required>
+      </div>
+
+      <div class="mb-3">
+        <label class="fw-bold">Price (₹)</label>
+        <input type="number" name="price" class="form-control"
+          value="<%= isEdit ? editPlan.price : '' %>" required>
+      </div>
+
+      <% if (isEdit) { %>
+      <div class="mb-3">
+        <label class="fw-bold">Status</label>
+        <select name="status" class="form-select">
+          <option value="active" <%= editPlan.status === "active" ? "selected" : "" %>>Active</option>
+          <option value="inactive" <%= editPlan.status === "inactive" ? "selected" : "" %>>Inactive</option>
+        </select>
+      </div>
+      <% } %>
+
+      <button class="btn btn-primary w-100">
+        <%= isEdit ? "Update Plan" : "Create Plan" %>
+      </button>
+
+      <% if (isEdit) { %>
+        <a href="/admin/subscription-plans" class="btn btn-secondary w-100 mt-2">
+          Cancel Edit
+        </a>
+      <% } %>
+
+    </form>
+  </div>
+
+
+  <!-- ============================
+       CARDS (View + Edit + Delete)
+  ============================ -->
+  <div class="row">
+    <% plans.forEach(p => { %>
+      <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card h-100">
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title"><%= p.name %></h5>
+            <p class="card-text"><strong>Duration:</strong> <%= p.durationMonths %> Months</p>
+            <p class="card-text"><strong>Price:</strong> ₹ <%= p.price %></p>
+            <p class="card-text"><strong>Plan ID:</strong> <%= p.razorpayPlanId %></p>
+            <p class="card-text">
+              <strong>Status:</strong>
+              <span class="badge bg-<%= p.status == 'active' ? 'success' : 'danger' %>">
+                <%= p.status %>
+              </span>
+            </p>
+            <div class="mt-auto">
+              <a href="/admin/subscription-plans?edit=<%= p._id %>"
+                 class="btn btn-primary btn-sm me-2">
+                Edit
+              </a>
+              <a href="/admin/subscription-plans/delete/<%= p._id %>"
+                 onclick="return confirm('Delete this plan?')"
+                 class="btn btn-danger btn-sm">
+                Delete
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    <% }) %>
+  </div>
+
+</div>
+</div>
+<%- include("public/footer") %>

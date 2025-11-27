@@ -1,0 +1,85 @@
+<%- include("public/header") %>
+
+<div class="main-content">
+<div class="container py-5" style="max-width: 900px;">
+
+  <h2 class="text-center mb-4 fw-bold text-danger">Create <%= title.charAt(0).toUpperCase() + title.slice(1).toLowerCase() %>
+ News</h2>
+
+  <form action="/admin/<%= title %>/create"
+        method="POST"
+        enctype="multipart/form-data"
+        class="bg-white p-5 rounded shadow">
+
+    <!-- Headline -->
+    <div class="mb-3">
+      <label class="form-label fw-bold">Headline *</label>
+      <input type="text" name="headline" class="form-control" required>
+    </div>
+
+    <!-- Location -->
+    <div class="mb-3">
+      <label class="form-label fw-bold">Location *</label>
+      <input type="text" name="location" class="form-control" required>
+    </div>
+
+    <!-- Description -->
+    <div class="mb-3">
+      <label class="form-label fw-bold">Description *</label>
+      <textarea name="description" class="form-control" rows="5" required></textarea>
+    </div>
+
+    <!-- Highlights -->
+    <div class="mb-3">
+      <label class="form-label fw-bold">Highlights (one per line)</label>
+      <textarea name="highlightText" class="form-control" rows="4"></textarea>
+    </div>
+
+    <!-- Image or Video -->
+    <div class="mb-3">
+      <label class="form-label fw-bold">Upload Image or Video (Max 100MB)</label>
+      <input type="file" name="media" class="form-control" accept="image/*,video/*" multiple>
+    </div>
+
+    <!-- External Link -->
+    <div class="mb-3">
+      <label class="form-label">External Link (YouTube, etc.)</label>
+      <input type="url" name="externalLink" class="form-control">
+    </div>
+
+    <!-- Status -->
+    <div class="mb-4">
+      <label class="form-label fw-bold">Status</label>
+      <select name="status" class="form-select">
+        <option value="draft">Draft</option>
+        <option value="published">Published</option>
+      </select>
+    </div>
+
+    <div class="text-center">
+      <button type="submit" class="btn btn-danger btn-lg px-5">Publish News</button>
+      <a href="/admin/national" class="btn btn-secondary btn-lg ms-3">Cancel</a>
+    </div>
+
+  </form>
+</div>
+
+<style>
+  .form-control, .form-select {
+    border-radius: 12px;
+    padding: 12px;
+    font-size: 1.05rem;
+  }
+  .btn-danger {
+    background: linear-gradient(135deg, #e50914, #b80710);
+    border: none;
+    border-radius: 12px;
+  }
+  .btn-danger:hover {
+    background: #c20710;
+    transform: translateY(-2px);
+  }
+</style>
+</div>
+
+<%- include("public/footer") %>

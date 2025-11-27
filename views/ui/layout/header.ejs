@@ -1,0 +1,92 @@
+<style>
+    .animated-login-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 8px 22px;
+  border-radius: 8px;
+  background: linear-gradient(90deg, #7e0000, #7e0000 68%);
+  color: #fff;
+  font-weight: bolder;
+  text-decoration: none;
+  font-size: 16px;
+  box-shadow: 0 4px 20px rgba(200,0,0,0.10);
+  transition: 0.25s;
+  position: relative;
+  overflow: hidden;
+}
+.animated-login-btn span {
+  margin-right: 8px;
+  transition: transform 0.24s cubic-bezier(.52,-0.1,.38,1.4);
+}
+.animated-login-btn i {
+  transform: translateX(0);
+  transition: transform 0.24s cubic-bezier(.52,-0.1,.38,1.4);
+}
+.animated-login-btn:hover {
+  background: linear-gradient(90deg, #7e0000, #7e0000 68%);
+  box-shadow: 0 6px 18px rgba(255,23,68,0.15);
+  transform: translateY(-2px) scale(1.04);
+}
+.animated-login-btn:hover span {
+  transform: translateX(5px) scale(1.08);
+  font-weight: bold;
+  letter-spacing: .5px;
+}
+.animated-login-btn:hover i {
+  transform: translateX(4px) scale(1.15);
+  color: #fff703;
+  text-shadow: 0 0 12px #ff1a1a77;
+}
+</style>
+
+
+<header style="width:100%;background:#fff;border-bottom:2px solid #e0e0e0;">
+  <div class="top-bar" style="display:flex;align-items:center;justify-content:space-between;">
+
+    <!-- LEFT: LOGO -->
+    <div class="logo" style="display:flex;align-items:center;">
+      <img src="/logo/logo.png" alt="REDLINE 24x7 Logo" class="logo-img" >
+    </div>
+
+    <!-- RIGHT SIDE: SOCIAL + CONTACT BUTTON + LOGIN -->
+    <div style="display:flex;align-items:center;gap:15px;">
+
+      <!-- SOCIAL MEDIA ICONS -->
+      <div style="display:flex;gap:10px;">
+        <a href="#" style="color:#1877f2;font-size:20px;">
+          <i class="fab fa-facebook"></i>
+        </a>
+        <a href="#" style="color:#000000;font-size:20px;">
+         <i class="fa-brands fa-x-twitter"></i>
+        </a>
+        <a href="#" style="color:#ff0000;font-size:20px;">
+          <i class="fab fa-youtube"></i>
+        </a>
+        <a href="#" style="color:#e4405f;font-size:20px;">
+          <i class="fab fa-instagram"></i>
+        </a>
+      </div>
+
+   
+
+   <!-- LOGIN / LOGOUT BUTTON (Animated) -->
+<% if (!user) { %>
+  <a href="/login" class="animated-login-btn">
+    <span>Login</span>
+    <i class="fas fa-sign-in-alt"></i>
+  </a>
+<% } else { %>
+ 
+
+   <a href="/api/auth/logout" class="animated-login-btn"style="background:#7e0000; " onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
+    <span>Logout</span>
+    <i class="fas fa-sign-out-alt"></i>
+  </a>
+
+  <!-- Hidden Form for POST Logout (Recommended for Security) -->
+  <form id="logout-form" action="/api/auth/logout" method="POST" style="display: none;"></form>
+
+<% } %>
+    </div>
+  </div>
+</header>

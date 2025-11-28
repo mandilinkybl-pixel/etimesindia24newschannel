@@ -19,6 +19,10 @@ app.use("/sports",require("./sports"))
 app.use("/crime",require("./crime"))
 app.use("/live",require("./live"))
 app.use("/ads",require("./ads"))
+app.use("/leftad",require("./leftad"))
+app.use("/rightads",require("./rightads"))
+
+
 app.use("/subscription-plans",require("./plan"))
 app.use("/main",require("./mainvideo"))
 

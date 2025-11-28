@@ -779,50 +779,7 @@ width:auto;
       <p>Loading Plans | E TIMES INDIA * 24...</p>
     </div>
 
-    <header style="width:100%;background:#fff;border-bottom:2px solid #e0e0e0;">
-      <div class="top-bar" style="display:flex;align-items:center;justify-content:space-between;">
-
-        <!-- LEFT: LOGO -->
-        <div class="logo" style="display:flex;align-items:center;">
-          <img src="/logo/logo.png" alt="E TIMES INDIA * 24 Logo" class="logo-img" >
-        </div>
-
-        <!-- RIGHT SIDE: SOCIAL + CONTACT BUTTON -->
-        <div style="display:flex;align-items:center;gap:15px;">
-
-          <!-- SOCIAL MEDIA ICONS -->
-          <div style="display:flex;gap:10px;">
-
-            <a href="#" style="color:#1877f2;font-size:20px;">
-              <i class="fab fa-facebook"></i>
-            </a>
-
-            <a href="#" style="color:#000000;font-size:20px;">
-             <i class="fa-brands fa-x-twitter"></i>
-
-            </a>
-
-            <a href="#" style="color:#ff0000;font-size:20px;">
-              <i class="fab fa-youtube"></i>
-            </a>
-
-            <a href="#" style="color:#e4405f;font-size:20px;">
-              <i class="fab fa-instagram"></i>
-            </a>
-
-          </div>
-
-          <!-- CONTACT FOR AD BUTTON -->
-          <a href="#contact-ad"
-            style="background:#a00000;color:#fff;padding:8px 14px;border-radius:5px;
-            text-decoration:none;font-weight:600;white-space:nowrap;">
-            Contact for Ad
-          </a>
-
-        </div>
-
-      </div>
-    </header>
+    <%- include("layout/header") %>
 
     <div class="live-info">
       <div class="time" id="liveTime"></div>
@@ -918,7 +875,64 @@ width:auto;
               </div>
             </div>
           </div>
-          <div class="ad-banner">ADVERTISEMENT<br />300x250</div>
+         
+        <div class="left-ad-section" style="width:300px; margin-top: 20px;">
+
+  <% if (leftads && leftads.length > 0) { %>
+
+      <% leftads.forEach(ad => { %>
+
+        <div class="left-ad-box" style="margin-bottom:20px; width:300px;">
+
+          <% if (ad.mediaType === "image") { %>
+
+            <a href="<%= ad.link || '#' %>" target="_blank">
+              <img 
+                src="<%= ad.mediaUrl %>" 
+                alt="<%= ad.title %>"
+                style="width:310px; height:auto; display:block; object-fit:contain; border:1px solid #ccc; border-radius:4px;"
+              >
+            </a>
+
+          <% } else if (ad.mediaType === "video") { %>
+
+            <video 
+              style="width:310px; height:auto; display:block; border:1px solid #ccc; border-radius:4px;" 
+              autoplay 
+              muted 
+              loop 
+              
+            >
+              <source src="<%= ad.mediaUrl %>" type="video/mp4">
+            </video>
+
+          <% } %>
+
+        </div>
+
+      <% }) %>
+
+  <% } else { %>
+
+      <!-- Default Banner -->
+      <div 
+        style="
+          width:300px;
+          height:auto;
+          padding:20px 0;
+          text-align:center;
+          background:#f2f2f2;
+          border:1px solid #ccc;
+          font-size:18px;
+          font-weight:bold;
+        "
+      >
+        ADVERTISEMENT <br> 300 × 250
+      </div>
+
+  <% } %>
+
+</div>
       </aside>
 
       <main>
@@ -1001,7 +1015,42 @@ width:auto;
             </ul>
           </div>
         </div>
-        <div class="ad-banner">ADVERTISEMENT<br />300x250</div>
+           <div class="right-ads" style="margin-top: 20; padding: 0;">
+  <% if (rightads && rightads.length > 0) { %>
+
+    <% rightads.forEach(ad => { %>
+
+      <div class="ad-box" style="margin-bottom:20px;">
+
+        <% if (ad.mediaType === "image") { %>
+            <a href="<%= ad.link || '#' %>" target="_blank">
+              <img 
+                src="<%= ad.mediaUrl %>" 
+                alt="<%= ad.title %>" 
+                style="width:350px; height:auto; display:block; object-fit:contain;"
+              >
+            </a>
+
+        <% } else if (ad.mediaType === "video") { %>
+            <video 
+              style="width:350px; height:auto; display:block;" 
+              autoplay 
+              muted 
+              loop 
+             
+            >
+              <source src="<%= ad.mediaUrl %>" type="video/mp4">
+            </video>
+        <% } %>
+
+      </div>
+
+    <% }) %>
+
+  <% } else { %>
+      <div class="ad-banner">ADVERTISEMENT<br>300x600</div>
+  <% } %>
+</div>
       </aside>
     </div>
 

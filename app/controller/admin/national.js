@@ -1,6 +1,7 @@
 const National = require("../../models/National");
 const fs = require("fs");
 const path = require("path");
+
 const ffmpeg = require("fluent-ffmpeg");
 const ffmpegStatic = require("ffmpeg-static");
 const { createCanvas, loadImage } = require("canvas");
@@ -203,85 +204,86 @@ exports.downloadVideoWithOverlay = async (req, res) => {
     const overlayPath = path.join(tempDir, `overlay_${news._id}.png`);
     const outputPath = path.join(tempDir, `ETimes_${news._id}_${Date.now()}.mp4`);
 
-    // default logos (change if your files are named differently)
-    const breakingTag = path.join(__dirname, "../../../public/logo/tag.png");      // left
-    const etimesLogo = path.join(__dirname, "../../../public/logo/logo.png");     // right
+    const breakingTag = path.join(__dirname, "../../../public/logo/tag.png");
+    const etimesLogo = path.join(__dirname, "../../../public/logo/logo.png");
 
-    // sanity check video exists
     if (!fs.existsSync(videoPath)) {
       req.flash("error", "Video file missing");
       return res.redirect("/admin/national");
     }
 
-    /* ---------------------------
-       1) CREATE OVERLAY USING CANVAS
-       ---------------------------*/
-    // 720x1280 portrait as per screenshot
-    const W = 720, H = 1280;
+    /* ----------------------------------------------------------
+       0) GET REAL VIDEO WIDTH & HEIGHT USING FFMPEG PROBE
+       ----------------------------------------------------------*/
+    const metadata = await new Promise((resolve, reject) => {
+      ffmpeg.ffprobe(videoPath, (err, data) => {
+        if (err) reject(err);
+        else resolve(data);
+      });
+    });
+
+    const stream = metadata.streams.find(s => s.width && s.height);
+    const W = stream.width;
+    const H = stream.height;
+
+    console.log("VIDEO SIZE:", W, "x", H);
+
+    /* ----------------------------------------------------------
+       1) CREATE OVERLAY CANVAS (SAME SIZE AS VIDEO)
+       ----------------------------------------------------------*/
     const canvas = createCanvas(W, H);
     const ctx = canvas.getContext("2d");
 
-    // Transparent background (so video shows through)
     ctx.clearRect(0, 0, W, H);
 
-    // TOP WHITE BAR (height ~60)
-    const topBarH = 60;
-    ctx.fillStyle = "#ffffff";
-    roundRect(ctx, 0, 0, W, topBarH, 0, true, false); // flat corners
+    // dynamic top bar + ticker height based on video size
+    const topBarH = Math.floor(H * 0.08);
+    const tickerH = Math.floor(H * 0.05);
 
-    // Breaking tag (left)
+    // top white bar
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, W, topBarH);
+
+    // Breaking tag logo
     try {
       const tagImg = await loadImage(breakingTag);
-      // scale to fit ~120x46
-      const tagW = 140, tagH = 46;
-      ctx.drawImage(tagImg, 8, 7, tagW, tagH);
-    } catch (e) {
-      // ignore if missing
-    }
-
-    // Center Headline (fits in top bar)
-    ctx.fillStyle = "#b30000"; // small accent used for centered text, but heading mostly black
-    ctx.font = "bold 20px Arial";
-    ctx.textAlign = "center";
-    // headline: crop to reasonable length for top bar
-    const topHeadline = (news.headline || "").substring(0, 40);
-    ctx.fillStyle = "black";
-    ctx.fillText(topHeadline, W / 2, 38);
-
-    // Right: ETIMES logo and clock
-    try {
-      const logoImg = await loadImage(etimesLogo);
-      const logoW = 110, logoH = 36;
-      ctx.drawImage(logoImg, W - logoW - 8, 10, logoW, logoH);
+      ctx.drawImage(tagImg, 10, 10, topBarH * 2.2, topBarH * 0.8);
     } catch (e) {}
 
-    // Clock (current time) - 24 hour HH:MM:SS
+    // Headline text
+   // Headline text (MAROON, BOLD, BIGGER)
+ctx.fillStyle = "#680505ff";
+ctx.font = `bold ${Math.floor(topBarH * 0.55)}px Arial`;
+ctx.textAlign = "center";
+ctx.fillText((news.headline || "").substring(0, 60).toUpperCase(), W / 2, topBarH * 0.72);
+
+
+    // ETimes Logo
+    try {
+      const logoImg = await loadImage(etimesLogo);
+      const logoW = topBarH * 1.5;
+      const logoH = topBarH * 0.6;
+      ctx.drawImage(logoImg, W - logoW - 10, 10, logoW, logoH);
+    } catch (e) {}
+
+    // Live clock
     const now = new Date();
-    const hh = String(now.getHours()).padStart(2, "0");
-    const mm = String(now.getMinutes()).padStart(2, "0");
-    const ss = String(now.getSeconds()).padStart(2, "0");
-    const liveTime = `${hh}:${mm}:${ss}`;
-
+    const liveTime = `${now.getHours().toString().padStart(2,"0")}:${now.getMinutes().toString().padStart(2,"0")}:${now.getSeconds().toString().padStart(2,"0")}`;
     ctx.fillStyle = "#b30000";
-    ctx.font = "bold 14px Arial";
+    ctx.font = `bold ${Math.floor(topBarH * 0.25)}px Arial`;
     ctx.textAlign = "right";
-    ctx.fillText(liveTime, W - 10, 54);
+    ctx.fillText(liveTime, W - 8, topBarH - 3);
 
-    // Bottom ticker background (thick red bar)
-    const tickerH = 40;
-    ctx.fillStyle = "#8B0000"; // deep red
+    // Bottom red ticker bar
+    ctx.fillStyle = "#8B0000";
     ctx.fillRect(0, H - tickerH, W, tickerH);
-
-    // On top of ticker we will not draw the scrolling text in canvas (FFmpeg drawtext will do it),
-    // but draw a small left static "play icon" area or label if desired. We'll leave it minimal.
 
     // Save overlay
     fs.writeFileSync(overlayPath, canvas.toBuffer("image/png"));
 
-    /* ---------------------------
-       2) PREPARE TEXT FOR FFMPEG drawtext (ticker)
-       ---------------------------*/
-    // Text sanitizer (windows-safe)
+    /* ----------------------------------------------------------
+       2) TEXT CLEANING
+       ----------------------------------------------------------*/
     const cleanText = (txt) =>
       (txt || "")
         .replace(/'/g, "′")
@@ -291,43 +293,49 @@ exports.downloadVideoWithOverlay = async (req, res) => {
         .replace(/;/g, ",")
         .replace(/\\/g, "/");
 
-    const tickerText = cleanText(news.ticker || `Top National News... | ${news.headline || ""}`);
+    const tickerText = cleanText(news.ticker || `BREAKING NEWS || ${news.headline || ""}`);
 
-    /* ---------------------------
-       3) FFMPEG COMPLEX FILTER
-       - input 0: original video
-       - input 1: overlay png (static)
-       - overlay at 0:0
-       - drawtext for scrolling ticker onto [base]
-       ---------------------------*/
-
-    // Windows font (adjust if using other OS). double-escape backslashes for ffmpeg filter string.
     const fontFile = "C\\:/Windows/Fonts/arialbd.ttf";
+;
 
-    // build complex filter:
-    // 1. scale input video to fit 720x1280 keeping aspect ratio (letterbox)
-    // 2. pad to 720x1280 with black
-    // 3. overlay overlay.png at 0,0
-    // 4. drawtext for scrolling ticker near bottom (y = H - 22)
+    /* ----------------------------------------------------------
+       3) FFMPEG FILTER (DYNAMIC SIZE)
+       ----------------------------------------------------------*/
     const filterLines = [
-      `[0:v]scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:black[vid]`,
-      `[vid][1:v]overlay=0:0[base]`,
-      // drawtext: scrolling leftwards: x = w - mod(t*speed\, w + text_w)
-      `[base]drawtext=fontfile=${fontFile}:text='${escapeFFmpegText(tickerText)}':fontcolor=white:fontsize=20:borderw=2:box=0:`
-      + `x=w-mod(t*120\\,w+text_w):y=${H - Math.floor(tickerH/2) + 6}[final]`
-    ];
+  `[0:v]scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:black[vid]`,
+  `[vid][1:v]overlay=0:0[base]`,
+
+  // Live clock (DYNAMIC)
+  `[base]drawtext=fontfile=${fontFile}:text='%{localtime\\:%H\\\\:%M\\\\:%S}':
+   fontcolor=red:fontsize=${Math.floor(topBarH * 0.30)}:
+   x=w-tw-20:y=10[base2]`,
+
+ // Ticker with typing effect + border color
+// Ticker text (bold, no border, slow scrolling)
+`[base2]drawtext=fontfile=${fontFile}:
+ text='${escapeFFmpegText(tickerText.toUpperCase())}':
+ fontcolor=white:
+ fontsize=${Math.floor(tickerH * 0.60)}:
+ x=w-mod(t*40\\, w+tw):
+ y=${H - tickerH + tickerH * 0.25}[final]`
+
+
+
+
+];
+
+
     const complexFilter = filterLines.join(";");
 
-    /* ---------------------------
-       4) RUN FFMPEG -> keep audio
-       ---------------------------*/
+    /* ----------------------------------------------------------
+       4) RUN FFMPEG
+       ----------------------------------------------------------*/
     ffmpeg(videoPath)
       .input(overlayPath)
       .complexFilter(complexFilter)
-      // map the filtered video and the original audio (if present)
       .outputOptions([
         "-map", "[final]",
-        "-map", "0:a?",        // copy audio if present; ? prevents error if none
+        "-map", "0:a?",
         "-c:v", "libx264",
         "-preset", "veryfast",
         "-crf", "22",
@@ -335,29 +343,16 @@ exports.downloadVideoWithOverlay = async (req, res) => {
         "-b:a", "128k",
         "-movflags", "+faststart",
       ])
-      .on("start", (cmd) => {
-        console.log("FFmpeg started:", cmd);
-      })
-      .on("progress", (progress) => {
-        // optional: console.log("Processing:", progress);
-      })
-      .on("error", (err, stdout, stderr) => {
-        console.error("FFmpeg error:", err.message);
-        console.error("ffmpeg stderr:", stderr);
-        req.flash("error", "Video export failed");
-        // cleanup overlay if created
-        if (fs.existsSync(overlayPath)) try { fs.unlinkSync(overlayPath); } catch(e) {}
-        return res.redirect("/admin/national");
-      })
       .on("end", () => {
-        console.log("SUCCESS →", outputPath);
-        // send file to user
-        res.download(outputPath, `ETimes_${Date.now()}.mp4`, (err) => {
-          // cleanup temp files; swallow errors
-          if (fs.existsSync(overlayPath)) try { fs.unlinkSync(overlayPath); } catch(e) {}
-          if (fs.existsSync(outputPath)) try { fs.unlinkSync(outputPath); } catch(e) {}
-          if (err) console.error("Download error:", err);
+        res.download(outputPath, `ETimes_${Date.now()}.mp4`, () => {
+          try { fs.unlinkSync(overlayPath); } catch {}
+          try { fs.unlinkSync(outputPath); } catch {}
         });
+      })
+      .on("error", (err) => {
+        console.error("FFmpeg ERROR:", err.message);
+        req.flash("error", "Video export failed");
+        return res.redirect("/admin/national");
       })
       .save(outputPath);
 
@@ -368,30 +363,8 @@ exports.downloadVideoWithOverlay = async (req, res) => {
   }
 };
 
-/* -----------------------------------------
-   Helper: roundRect (for completeness)
-   ----------------------------------------- */
-function roundRect(ctx, x, y, w, h, r, fill, stroke) {
-  if (typeof r === "undefined") r = 5;
-  ctx.beginPath();
-  ctx.moveTo(x + r, y);
-  ctx.arcTo(x + w, y, x + w, y + h, r);
-  ctx.arcTo(x + w, y + h, x, y + h, r);
-  ctx.arcTo(x, y + h, x, y, r);
-  ctx.arcTo(x, y, x + w, y, r);
-  ctx.closePath();
-  if (fill) ctx.fill();
-  if (stroke) ctx.stroke();
-}
-
-/* -----------------------------------------
-   Helper: escape text for ffmpeg drawtext
-   (replace single quotes and special chars)
-   ----------------------------------------- */
 function escapeFFmpegText(t) {
   if (!t) return "";
-  // Replace ' with \'
-  // Also escape : and , and \ so ffmpeg filter parser doesn't break.
   return String(t)
     .replace(/\\/g, "/")
     .replace(/'/g, "\\'")

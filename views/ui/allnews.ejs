@@ -784,68 +784,205 @@ width:auto;
               </div>
             </div>
           </div>
-          <div class="ad-banner">ADVERTISEMENT<br />300x250</div>
+          
+        <div class="left-ad-section" style="width:300px; margin-top: 20px;">
+
+  <% if (leftads && leftads.length > 0) { %>
+
+      <% leftads.forEach(ad => { %>
+
+        <div class="left-ad-box" style="margin-bottom:20px; width:300px;">
+
+          <% if (ad.mediaType === "image") { %>
+
+            <a href="<%= ad.link || '#' %>" target="_blank">
+              <img 
+                src="<%= ad.mediaUrl %>" 
+                alt="<%= ad.title %>"
+                style="width:310px; height:auto; display:block; object-fit:contain; border:1px solid #ccc; border-radius:4px;"
+              >
+            </a>
+
+          <% } else if (ad.mediaType === "video") { %>
+
+            <video 
+              style="width:310px; height:auto; display:block; border:1px solid #ccc; border-radius:4px;" 
+              autoplay 
+              muted 
+              loop 
+              
+            >
+              <source src="<%= ad.mediaUrl %>" type="video/mp4">
+            </video>
+
+          <% } %>
+
+        </div>
+
+      <% }) %>
+
+  <% } else { %>
+
+      <!-- Default Banner -->
+      <div 
+        style="
+          width:300px;
+          height:auto;
+          padding:20px 0;
+          text-align:center;
+          background:#f2f2f2;
+          border:1px solid #ccc;
+          font-size:18px;
+          font-weight:bold;
+        "
+      >
+        ADVERTISEMENT <br> 300 × 250
+      </div>
+
+  <% } %>
+
+</div>
       </aside>
 
     <main>
     <!-- Category Hero -->
-    <section class="category-hero">
-      <h1><%= title.charAt(0).toUpperCase() + title.slice(1).toLowerCase() %> News</h1>
-      <p>Latest <%= title.charAt(0).toUpperCase() + title.slice(1).toLowerCase() %> updates, market trends, and breaking stories from across India.</p>
-    </section>
+   <!-- HERO -->
+  <section style="background:linear-gradient(135deg,#a00000,#d41414);color:#fff;text-align:center;padding:70px 20px;">
+    <h1 style="margin:0;font-size:2.9rem;font-weight:800;">
+      <%= title.charAt(0).toUpperCase() + title.slice(1).toLowerCase() %> News
+    </h1>
+    <p style="font-size:1.22rem;margin:15px 0 0;opacity:0.94;">
+      Latest breaking stories, updates & analysis from India
+    </p>
+  </section>
 
-    <!-- AD BLOCK -->
-    <div style="width: 100%; margin: 20px 0; text-align: center">
-      <img src="/logo/logo.png" style="width: 100%; max-width: 900px; border-radius: 6px" />
-    </div>
+  <!-- AD -->
+  <div style="text-align:center;margin:30px 0;">
+    <img src="/logo/logo.png" style="width:100%;max-width:900px;border-radius:8px;" loading="lazy">
+  </div>
 
-    <!-- All News Grid from DB -->
-    <div class="section-header">
-      <h2>All <%= title.charAt(0).toUpperCase() + title.slice(1).toLowerCase() %> Stories</h2>
-      <a href="/" style="color: #a00000; text-decoration: none">Back to Home</a>
-    </div>
-    <div class="news-grid" id="all-business-news">
-      <% news.forEach(function(item, idx) { %>
-        <a href="/<%= title %>/<%= item.id %>" style="text-decoration: none;">
-        <div class="news-card">
-          <% if(item.mediaType === "image" && item.image) { %>
-            <img src="<%= item.image %>" alt="<%= item.headline %>" loading="lazy">
-          <% } else if(item.mediaType === "video" && item.video) { %>
-            <video src="<%= item.video %>" controls style="width:100%;height:180px;"></video>
+  <!-- HEADER -->
+  <div style="display:flex;justify-content:space-between;align-items:center;
+       background:#a00000;color:#fff;padding:16px 25px;margin:20px 15px 15px;border-radius:12px;">
+    <h2 style="margin:0;font-size:1.75rem;">All <%= title.charAt(0).toUpperCase() + title.slice(1) %> Stories</h2>
+    <a href="/" style="color:#fff;text-decoration:none;font-weight:600;">Back to Home</a>
+  </div>
+
+  <!-- GRID: 3 Cards Per Row -->
+  <div id="newsContainer" style="display:flex;flex-wrap:wrap;justify-content:center;gap:28px;padding:0 15px;max-width:1500px;margin:0 auto;">
+    
+    <!-- First page (24 cards) already rendered by server -->
+    <% news.forEach(function(item) { %>
+      <a href="/<%= title %>/<%= item._id %>" style="text-decoration:none;color:#222;display:block;">
+        <div style="background:#fff;border-radius:12px;overflow:hidden;
+                    box-shadow:0 2px 16px #a000003a;border-left:7px solid #a00000;
+                    max-width:380px;width:100%;transition:all 0.3s;">
+          
+          <% if(item.mediaType === 'video' && item.video) { %>
+            <video controls poster="<%= item.image || '/logo/logo.png' %>"
+                   style="width:100%;height:190px;object-fit:cover;">
+              <source src="<%= item.video %>" type="video/mp4">
+            </video>
           <% } else { %>
-            <img src="https://picsum.photos/seed/business-<%= idx %>/400/250" alt="<%= item.headline %>" loading="lazy">
+            <img src="<%= item.image || `https://picsum.photos/seed/${item._id}/400/250` %>"
+                 alt="<%= item.headline %>" loading="lazy"
+                 style="width:100%;height:190px;object-fit:cover;">
           <% } %>
-          <div style="padding:14px">
-            <div class="date">
-              <%= new Date(item.createdAt).toLocaleDateString("en-IN", {day: "numeric", month: "short", year: "numeric"}) %>
+
+          <div style="padding:16px;">
+            <div style="color:#a00000;font-size:12px;font-weight:600;margin-bottom:8px;">
+              <%= new Date(item.createdAt).toLocaleDateString("en-IN", {day:"numeric", month:"short", year:"numeric"}) %>
             </div>
-            <h3><%= item.headline %></h3>
-            <p><%= item.description.substring(0, 140) %>...</p>
+            <h3 style="margin:0 0 10px;font-size:1.18rem;font-weight:700;line-height:1.3;">
+              <%= item.headline %>
+            </h3>
+            <p style="margin:0 0 12px;font-size:0.98rem;color:#444;line-height:1.5;">
+              <%= item.description.substring(0,140) %>...
+            </p>
             <% if(item.location) { %>
-              <p style="font-size:12px;color:#c80000;">
-                <i class="fas fa-map-marker-alt"></i>
+              <p style="margin:0;font-size:13px;color:#c80000;font-weight:600;">
                 <%= item.location %>
               </p>
             <% } %>
             <% if(item.externalLink) { %>
-              <p>
-                <a href="<%= item.externalLink %>" target="_blank" style="color:#a00000;">Read More</a>
+              <p style="margin:10px 0 0;">
+                <a href="<%= item.externalLink %>" target="_blank"
+                   style="color:#a00000;font-weight:600;text-decoration:none;">
+                  Read Full Story
+                </a>
               </p>
             <% } %>
           </div>
         </div>
-        </a>
-      <% }); %>
-    </div>
-    <!-- Pagination HTML if needed -->
-    <div class="pagination">
-      <a href="#">&laquo; Previous</a>
-      <span class="current">1</span>
-      <a href="#">2</a>
-      <a href="#">3</a>
-      <span>...</span>
-      <a href="#">Next &raquo;</a>
-    </div>
+      </a>
+    <% }); %>
+  </div>
+
+  <!-- Loading & End Message -->
+  <div id="loading" style="text-align:center;padding:50px;font-size:1.3rem;color:#a00000;display:none;">
+    Loading more stories...
+  </div>
+  <div id="noMore" style="text-align:center;padding:50px;color:#666;display:none;">
+    You've reached the end!
+  </div>
+
+  <!-- AJAX Lazy Load Script -->
+  <script>
+    let currentPage = 2; // First page already loaded
+    let loading = false;
+    const category = "<%= title %>";
+    const totalPages = <%= pageCount %>;
+
+    async function loadMore() {
+      if (loading || currentPage > totalPages) return;
+      loading = true;
+      document.getElementById('loading').style.display = 'block';
+
+      try {
+        const res = await fetch(`/${category}?page=${currentPage}&ajax=1`);
+        const html = await res.text();
+
+        if (html.trim() === '' || currentPage > totalPages) {
+          document.getElementById('noMore').style.display = 'block';
+          document.getElementById('loading').style.display = 'none';
+          return;
+        }
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(html, 'text/html');
+        const newCards = doc.querySelectorAll('#newsContainer > a');
+
+        const container = document.getElementById('newsContainer');
+        newCards.forEach(card => {
+          const wrapper = document.createElement('div');
+          wrapper.style.opacity = '0';
+          wrapper.style.transform = 'translateY(30px)';
+          wrapper.style.transition = 'all 0.6s ease';
+          wrapper.innerHTML = card.outerHTML;
+          container.appendChild(wrapper.firstChild);
+
+          setTimeout(() => {
+            wrapper.firstChild.style.opacity = '1';
+            wrapper.firstChild.style.transform = 'translateY(0)';
+          }, 100);
+        });
+
+        currentPage++;
+      } catch (err) {
+        console.error(err);
+      } finally {
+        loading = false;
+        document.getElementById('loading').style.display = 'none';
+      }
+    }
+
+    // Trigger on scroll
+    window.addEventListener('scroll', () => {
+      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
+        loadMore();
+      }
+    });
+  </script>
     <!-- AD BLOCK -->
     <div style="width: 100%; margin: 20px 0; text-align: center">
       <img src="/logo/logo.png" style="width: 100%; max-width: 900px; border-radius: 6px" />
@@ -853,38 +990,142 @@ width:auto;
   </main>
 
       <aside class="right-sidebar">
-        <h2
-          style="
-            background: #c80000;
-            color: #fff;
-            padding: 18px;
-            text-align: center;
-            border-radius: 12px;
-            margin: 0;
-          "
-        >
-          Trending Politics
-        </h2>
-        <div style="padding: 15px">
-          <div style="padding: 12px; border-bottom: 1px solid #eee">
-            <h4 style="color: #c80000">Rohini Acharya Exit</h4>
-            <small>Live Updates</small>
+
+  <!-- Trending Header -->
+  <h2 style="background:#c80000;color:#fff;padding:18px;text-align:center;border-radius:12px 12px 0 0;margin:0;font-size:20px;font-weight:700;">
+    Trending Politics
+  </h2>
+
+  <!-- Dynamic Trending List -->
+  <div style="background:#fff;border-radius:0 0 12px 12px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.1);">
+    
+    <% 
+      // Use: latestPolitics, trendingNews, or any array you pass from controller
+      const trendingList = news || trendingNews || []; 
+      trendingList.slice(0, 10).forEach((item, index) => { 
+    %>
+      <a href="/<%= title %>/<%= item._id %>" 
+         style="text-decoration:none;color:#222;display:block;transition:all 0.3s;">
+        
+        <div style="display:flex;gap:14px;align-items:center;padding:14px;
+                    border-bottom:1px solid #f0f0f0;transition:all 0.3s;">
+          
+          <!-- Rank Number -->
+          <div style="background:#c80000;color:#fff;width:34px;height:34px;border-radius:50%;
+                      display:flex;align-items:center;justify-content:center;font-weight:bold;
+                      font-size:15px;flex-shrink:0;">
+            <%= index + 1 %>
           </div>
-          <div style="padding: 12px; border-bottom: 1px solid #eee">
-            <h4 style="color: #c80000">Bihar NDA Win</h4>
-            <small>Nitish Oath Nov 17</small>
-          </div>
-          <div style="padding: 12px; border-bottom: 1px solid #eee">
-            <h4 style="color: #c80000">Lalu Admitted to AIIMS</h4>
-            <small>Health Scare</small>
-          </div>
-          <div style="padding: 12px">
-            <h4 style="color: #c80000">Congress Demands Recount</h4>
-            <small>Post-Poll Drama</small>
+
+          <!-- Thumbnail (Photo or Video) -->
+        <!-- THUMBNAIL - VIDEO OR IMAGE + VIDEO TAG ALWAYS ON VIDEOS -->
+<div style="flex-shrink:0; position:relative; width:90px; height:60px; border-radius:8px; overflow:hidden; background:#000;">
+  
+  <% if (item.mediaType === 'video') { %>
+    <!-- VIDEO CARD - WITH VIDEO TAG -->
+   <video 
+    src="<%= item.video || '/videos/default.mp4' %>" 
+    poster="<%= item.image || '/logo/video-thumb.jpg' || 'https://picsum.photos/seed/v' + item._id + '/400/250' %>" 
+    alt="<%= item.headline %>" 
+    style="width:100%; height:100%; object-fit:cover; opacity:0.85;"
+    preload="none"
+    playsinline
+    controls>
+</video>
+
+      <video src="<%= item.image || '/logo/video-thumb.jpg' || 'https://picsum.photos/seed/v'+item._id+'/400/250' %>"></video>
+    
+    <!-- PLAY ICON -->
+    <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center;">
+      <i class="fas fa-play-circle" style="color:#fff; font-size:34px; opacity:0.95;"></i>
+    </div>
+    
+    <!-- RED "VIDEO" TAG - ALWAYS VISIBLE -->
+    <div style="position:absolute; top:4px; left:4px; background:#c80000; color:#fff; 
+                padding:3px 8px; border-radius:4px; font-size:10px; font-weight:900; 
+                letter-spacing:0.5px; box-shadow:0 2px 8px rgba(0,0,0,0.4);">
+      VIDEO
+    </div>
+
+  <% } else { %>
+    <!-- NORMAL IMAGE CARD -->
+    <img 
+      src="<%= item.image || 'https://picsum.photos/seed/'+item._id+'/400/250' %>" 
+      alt="<%= item.headline %>" 
+      loading="lazy"
+      style="width:100%; height:100%; object-fit:cover;">
+  <% } %>
+
+</div>
+
+          <!-- Text -->
+          <div style="flex-grow:1;">
+            <h4 style="margin:0 0 4px;font-size:14.5px;font-weight:700;line-height:1.3;color:#c80000;">
+              <%= item.headline.length > 58 ? item.headline.substring(0,55)+'...' : item.headline %>
+            </h4>
+            <small style="color:#666;font-size:12px;display:block;">
+              <%= item.description ? item.description.substring(0,65)+(item.description.length>65?'...':'') : 'Click to read' %>
+            </small>
           </div>
         </div>
-        <div class="ad-banner">ADVERTISEMENT<br />300x600</div>
-      </aside>
+
+        <!-- Hover Effect -->
+        <style>
+          a:hover > div {
+            background:#fff8f8 !important;
+            transform:translateX(6px);
+            padding-left:18px !important;
+          }
+        </style>
+      </a>
+    <% }) %>
+
+    <!-- Fallback if no news -->
+    <% if (!trendingList || trendingList.length === 0) { %>
+      <div style="padding:30px;text-align:center;color:#999;font-style:italic;">
+        No trending politics news right now
+      </div>
+    <% } %>
+  </div>
+
+  <!-- Ad -->
+     <div class="right-ads" style="margin-top: 20; padding: 0;">
+  <% if (rightads && rightads.length > 0) { %>
+
+    <% rightads.forEach(ad => { %>
+
+      <div class="ad-box" style="margin-bottom:20px;">
+
+        <% if (ad.mediaType === "image") { %>
+            <a href="<%= ad.link || '#' %>" target="_blank">
+              <img 
+                src="<%= ad.mediaUrl %>" 
+                alt="<%= ad.title %>" 
+                style="width:350px; height:auto; display:block; object-fit:contain;"
+              >
+            </a>
+
+        <% } else if (ad.mediaType === "video") { %>
+            <video 
+              style="width:350px; height:auto; display:block;" 
+              autoplay 
+              muted 
+              loop 
+             
+            >
+              <source src="<%= ad.mediaUrl %>" type="video/mp4">
+            </video>
+        <% } %>
+
+      </div>
+
+    <% }) %>
+
+  <% } else { %>
+      <div class="ad-banner">ADVERTISEMENT<br>300x600</div>
+  <% } %>
+</div>
+</aside>
     </div>
 
        <%- include("layout/footer") %>

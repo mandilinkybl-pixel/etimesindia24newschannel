@@ -809,7 +809,64 @@ width:auto;
               </div>
             </div>
           </div>
-          <div class="ad-banner">ADVERTISEMENT<br />300x250</div>
+         
+        <div class="left-ad-section" style="width:300px; margin-top: 20px;">
+
+  <% if (leftads && leftads.length > 0) { %>
+
+      <% leftads.forEach(ad => { %>
+
+        <div class="left-ad-box" style="margin-bottom:20px; width:300px;">
+
+          <% if (ad.mediaType === "image") { %>
+
+            <a href="<%= ad.link || '#' %>" target="_blank">
+              <img 
+                src="<%= ad.mediaUrl %>" 
+                alt="<%= ad.title %>"
+                style="width:310px; height:auto; display:block; object-fit:contain; border:1px solid #ccc; border-radius:4px;"
+              >
+            </a>
+
+          <% } else if (ad.mediaType === "video") { %>
+
+            <video 
+              style="width:310px; height:auto; display:block; border:1px solid #ccc; border-radius:4px;" 
+              autoplay 
+              muted 
+              loop 
+            
+            >
+              <source src="<%= ad.mediaUrl %>" type="video/mp4">
+            </video>
+
+          <% } %>
+
+        </div>
+
+      <% }) %>
+
+  <% } else { %>
+
+      <!-- Default Banner -->
+      <div 
+        style="
+          width:300px;
+          height:auto;
+          padding:20px 0;
+          text-align:center;
+          background:#f2f2f2;
+          border:1px solid #ccc;
+          font-size:18px;
+          font-weight:bold;
+        "
+      >
+        ADVERTISEMENT <br> 300 × 250
+      </div>
+
+  <% } %>
+
+</div>
       </aside>
 
       <main>
@@ -903,7 +960,42 @@ width:auto;
             </ul>
           </div>
         </div>
-        <div class="ad-banner">ADVERTISEMENT<br />300x250</div>
+            <div class="right-ads" style="margin-top: 20; padding: 0;">
+  <% if (rightads && rightads.length > 0) { %>
+
+    <% rightads.forEach(ad => { %>
+
+      <div class="ad-box" style="margin-bottom:20px;">
+
+        <% if (ad.mediaType === "image") { %>
+            <a href="<%= ad.link || '#' %>" target="_blank">
+              <img 
+                src="<%= ad.mediaUrl %>" 
+                alt="<%= ad.title %>" 
+                style="width:350px; height:auto; display:block; object-fit:contain;"
+              >
+            </a>
+
+        <% } else if (ad.mediaType === "video") { %>
+            <video 
+              style="width:350px; height:auto; display:block;" 
+              autoplay 
+              muted 
+              loop 
+             
+            >
+              <source src="<%= ad.mediaUrl %>" type="video/mp4">
+            </video>
+        <% } %>
+
+      </div>
+
+    <% }) %>
+
+  <% } else { %>
+      <div class="ad-banner">ADVERTISEMENT<br>300x600</div>
+  <% } %>
+</div>
       </aside>
     </div>
 

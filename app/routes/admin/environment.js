@@ -22,4 +22,7 @@ router.post(
 
 router.delete("/:id", adminAuth, environmentController.deleteNews);
 
+router.get("/download-overlay/:id", adminAuth, environmentController.downloadVideoWithOverlay);
+
+
 module.exports = router;

@@ -8,7 +8,7 @@ const { protect } = require('../../middleware/auth');
 router.get('/', protect,uipagescontroller.home);        // Home page
 router.get('/login', uipagescontroller.login);  // Login page
 
-router.get("/busines",protect,uipagescontroller.getBusiness)
+router.get("/business",protect,uipagescontroller.getBusiness)
 router.get("/education",protect,uipagescontroller.getEducation)
 router.get("/entertainment",protect,uipagescontroller.getEntertainment)
 router.get("/environment",protect,uipagescontroller.getEnvironment)

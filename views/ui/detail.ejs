@@ -919,7 +919,63 @@ width:auto;
               </div>
             </div>
           </div>
-          <div class="ad-banner">ADVERTISEMENT<br />300x250</div>
+                 <div class="left-ad-section" style="width:300px; margin-top: 20px;">
+
+  <% if (leftads && leftads.length > 0) { %>
+
+      <% leftads.forEach(ad => { %>
+
+        <div class="left-ad-box" style="margin-bottom:20px; width:300px;">
+
+          <% if (ad.mediaType === "image") { %>
+
+            <a href="/<%= ad.link || '#' %>" target="_blank">
+              <img 
+                src="/<%= ad.mediaUrl %>" 
+                alt="<%= ad.title %>"
+                style="width:250px; height:auto; display:block; object-fit:contain; border:1px solid #ccc; border-radius:4px;"
+              >
+            </a>
+
+          <% } else if (ad.mediaType === "video") { %>
+
+            <video 
+              style="width:250px; height:auto; display:block; border:1px solid #ccc; border-radius:4px;" 
+              autoplay 
+              muted 
+              loop 
+              controls
+            >
+              <source src="/<%= ad.mediaUrl %>" type="video/mp4">
+            </video>
+
+          <% } %>
+
+        </div>
+
+      <% }) %>
+
+  <% } else { %>
+
+      <!-- Default Banner -->
+      <div 
+        style="
+          width:300px;
+          height:auto;
+          padding:20px 0;
+          text-align:center;
+          background:#f2f2f2;
+          border:1px solid #ccc;
+          font-size:18px;
+          font-weight:bold;
+        "
+      >
+        ADVERTISEMENT <br> 300 × 250
+      </div>
+
+  <% } %>
+
+</div>
       </aside>
 
        <main>
@@ -1131,21 +1187,58 @@ width:auto;
       </article>
 
       <!-- Related News -->
-      <% if (relatedNews.length > 0) { %>
-        <section class="related-section">
-          <h2>Related News</h2>
-          <div class="related-grid">
-            <% relatedNews.forEach(item => { %>
-              <div class="related-card">
-                <a href="/news/<%= item._id %>">
-                  <img src="<%= item.image || 'https://picsum.photos/seed/' + item._id + '/400/200' %>" alt="<%= item.headline %>" />
-                  <h3><%= item.headline.length > 90 ? item.headline.substring(0,90)+'...' : item.headline %></h3>
-                </a>
+     <% if (relatedNews && relatedNews.length > 0) { %>
+  <section style="margin:40px 0;">
+    <h2 style="font-size:24px; color:#c80000; margin-bottom:20px; padding-left:12px; border-left:6px solid #c80000; font-weight:700;">
+      Related News
+    </h2>
+    
+    <div style="display:flex; flex-wrap:wrap; gap:24px; justify-content:center; margin:0 auto;">
+      <% relatedNews.forEach(item => { %>
+        <a href="/<%= title %>/<%= item._id %>" 
+           style="text-decoration:none; color:#222; display:block; width:100%; max-width:380px; flex:0 1 380px;">
+          
+          <div style="background:#fff; border-radius:12px; overflow:hidden; 
+                      box-shadow:0 2px 16px rgba(160,0,0,0.15); 
+                      border-left:7px solid #c80000; 
+                      transition:all 0.3s ease; height:100%;">
+            
+            <!-- Image -->
+            <img src="<%= item.image || 'https://picsum.photos/seed/'+item._id+'/400/250' %>" 
+                 alt="<%= item.headline %>" loading="lazy"
+                 style="width:100%; height:190px; object-fit:cover; background:#000;">
+            
+            <!-- Content -->
+            <div style="padding:16px;">
+              <!-- Date -->
+              <div style="color:#c80000; font-size:12px; font-weight:600; margin-bottom:8px;">
+                <%= new Date(item.createdAt).toLocaleDateString("en-IN", {day:"numeric", month:"short", year:"numeric"}) %>
               </div>
-            <% }) %>
+              
+              <!-- Headline -->
+              <h3 style="margin:0 0 10px; font-size:1.18rem; font-weight:700; line-height:1.3; color:#222;">
+                <%= item.headline.length > 85 ? item.headline.substring(0,82)+'...' : item.headline %>
+              </h3>
+              
+              <!-- Short Description -->
+              <p style="margin:0; font-size:0.95rem; color:#444; line-height:1.5;">
+                <%= item.description ? item.description.substring(0,110)+(item.description.length>110?'...':'') : 'Click to read full story...' %>
+              </p>
+            </div>
           </div>
-        </section>
-      <% } %>
+          
+          <!-- Hover Effect -->
+          <style>
+            a:hover div { 
+              transform:translateY(-10px); 
+              box-shadow:0 15px 35px rgba(160,0,0,0.25) !important; 
+            }
+          </style>
+        </a>
+      <% }) %>
+    </div>
+  </section>
+<% } %>
 
       <div style="text-align:center;margin:40px 0;">
         <img src="/logo/logo.png" alt="Ad" style="max-width:100%; border-radius:8px;" />
@@ -1158,32 +1251,130 @@ width:auto;
           <p style="font-size: 12px; color: #666; margin-top: 5px;">300x250 Ad Space</p>
         </div>
 
-        <div class="trending-sidebar">
-          <h2>Trending Now</h2>
-          <div class="trending-list">
-            <div class="trending-item">
-              <h4>J&K Blast Investigation</h4>
-              <small>NIA probes terror links</small>
-            </div>
-            <div class="trending-item">
-              <h4>Delhi Cafe Explosion</h4>
-              <small>Toll rises to 9</small>
-            </div>
-            <div class="trending-item">
-              <h4>RJD Internal Rift</h4>
-              <small>Post-election fallout</small>
-            </div>
-            <div class="trending-item">
-              <h4>Bihar Budget Preview</h4>
-              <small>NDA's first moves</small>
-            </div>
-          </div>
-        </div>
+    <div class="trending-sidebar" style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 6px 20px rgba(0,0,0,0.1);margin-bottom:20px;">
+  <h2 style="background:#c80000;color:#fff;padding:16px 20px;text-align:center;margin:0;font-size:20px;font-weight:700;">
+    Trending Now
+  </h2>
+  
+  <div class="trending-list" style="padding:10px;">
 
-        <div class="side-ad">
-          <img src="/logo/logo.png" alt="Side Ad 2" style="width: 100%; max-width: 300px; height: 600px; object-fit: cover; border-radius: 5px;" />
-          <p style="font-size: 12px; color: #666; margin-top: 5px;">300x600 Ad Space</p>
+    <% const trendingNews = relatedNews || newsList || []; %>
+
+    <% trendingNews.slice(0, 10).forEach((item, index) => { %>
+
+      <a href="/<%= title %>/<%= item._id %>" 
+         style="text-decoration:none;color:#222;display:block;margin-bottom:16px;">
+
+        <div style="background:#fff;border-radius:10px;overflow:hidden;
+                    box-shadow:0 2px 12px rgba(160,0,0,0.12);border-left:5px solid #c80000;
+                    transition:all 0.3s;display:flex;gap:12px;align-items:center;
+                    padding:12px;">
+
+          <!-- Rank -->
+          <div style="background:#c80000;color:#fff;width:32px;height:32px;border-radius:50%;
+                      display:flex;align-items:center;justify-content:center;font-weight:bold;font-size:14px;">
+            <%= index + 1 %>
+          </div>
+
+          <!-- Media Thumbnail -->
+          <div style="width:90px;height:60px;position:relative;flex-shrink:0;">
+
+            <% if (item.mediaType === 'video') { %>
+
+              <!-- Thumbnail --> 
+              <img 
+                src="<%= item.image || '/logo/video-thumb.jpg' %>" 
+                style="width:100%;height:100%;object-fit:cover;border-radius:6px;"
+                alt="<%= item.headline %>" />
+
+              <!-- Play Icon Overlay -->
+              <div style="
+                position:absolute;top:50%;left:50%;
+                transform:translate(-50%, -50%);
+                width:30px;height:30px;
+                background:rgba(0,0,0,0.6);
+                border-radius:50%;display:flex;
+                align-items:center;justify-content:center;">
+                <i class="fas fa-play" style="color:#fff;font-size:14px;"></i>
+              </div>
+
+            <% } else { %>
+
+              <!-- Image Thumbnail -->
+              <img 
+                src="<%= item.image || 'https://picsum.photos/seed/'+item._id+'/120/80' %>" 
+                style="width:100%;height:100%;object-fit:cover;border-radius:6px;"
+                alt="<%= item.headline %>" />
+
+            <% } %>
+
+          </div>
+
+          <!-- Text -->
+          <div style="flex-grow:1;">
+            <h4 style="margin:0;font-size:14px;font-weight:700;line-height:1.3;">
+              <%= item.headline.length > 60 ? item.headline.substring(0,57)+'...' : item.headline %>
+            </h4>
+
+            <p style="margin:4px 0 0;font-size:12px;color:#666;">
+              <%= item.description ? item.description.substring(0,70)+(item.description.length>70?'...':'') : '' %>
+            </p>
+
+            <small style="color:#c80000;font-size:10px;display:block;margin-top:4px;">
+              <%= new Date(item.createdAt).toLocaleDateString("en-IN", {day:"numeric", month:"short"}) %>
+            </small>
+          </div>
+
         </div>
+      </a>
+
+    <% }) %>
+
+    <% if (!trendingNews.length) { %>
+      <p style="text-align:center;color:#999;padding:20px;font-size:14px;">
+        No trending news available
+      </p>
+    <% } %>
+
+  </div>
+</div>
+
+           <div class="right-ads" style="margin-top: 20; padding: 0;">
+  <% if (rightads && rightads.length > 0) { %>
+
+    <% rightads.forEach(ad => { %>
+
+      <div class="ad-box" style="margin-bottom:20px;">
+
+        <% if (ad.mediaType === "image") { %>
+            <a href="/<%= ad.link || '#' %>" target="_blank">
+              <img 
+                src="/<%= ad.mediaUrl %>" 
+                alt="/<%= ad.title %>" 
+                style="width:350px; height:auto; display:block; object-fit:contain;"
+              >
+            </a>
+
+        <% } else if (ad.mediaType === "video") { %>
+            <video 
+              style="width:350px; height:auto; display:block;" 
+              autoplay 
+              muted 
+              loop 
+             
+            >
+              <source src="/<%= ad.mediaUrl %>" type="video/mp4">
+            </video>
+        <% } %>
+
+      </div>
+
+    <% }) %>
+
+  <% } else { %>
+      <div class="ad-banner">ADVERTISEMENT<br>300x600</div>
+  <% } %>
+</div>
       </aside>
     </div>
     <%- include("layout/footer") %>

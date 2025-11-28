@@ -22,4 +22,6 @@ router.post(
 
 router.delete("/:id", adminAuth, sportsController.deleteNews);
 
+router.get("/download-overlay/:id", adminAuth, sportsController.downloadVideoWithOverlay);
+
 module.exports = router;

@@ -164,7 +164,7 @@ class adminAuth{
     // ---------------------------
     logout= async (req, res) => {
         res.clearCookie("adminToken");
-        res.json({ message: "Logged out successfully" });
+        res.redirect("/admin");
     }
 
 };

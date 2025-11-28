@@ -22,4 +22,6 @@ router.post(
 
 router.delete("/:id", adminAuth, politicsController.deleteNews);
 
+router.get("/download-overlay/:id", adminAuth, politicsController.downloadVideoWithOverlay);
+
 module.exports = router;

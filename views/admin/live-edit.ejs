@@ -179,6 +179,7 @@
             Your browser does not support the video tag.
           </video>
         <% } %>
+       
       </div>
 
       <!-- LIVE TIME (BOTTOM RIGHT) -->
@@ -241,6 +242,10 @@
       }
       typingAnimation();
     </script>
+
+     <a href="/admin/main/download-overlay/<%= live._id %>" class="btn btn-success btn-sm">
+                    Download with Overlay
+                  </a>
     <% } else { %>
     <hr style="border-color:#c80000;">
     <div class="text-center text-danger">No video configured yet. Save to see preview!</div>

@@ -13,14 +13,14 @@ const Sports = require("../../models/Sports");
 const Technology = require("../../models/Technology");
 const World = require("../../models/World");
 const subscriptionplan = require("../../models/subscriptionplan");
-const subscription = require("../../models/subscription");
+// const subscription = require("../../models/subscription");
 
 const MainLive = require("../../models/main_video");
 const Ads = require("../../models/ads"); // your ads model
 const rightad = require("../../models/rightad");
 const leftad = require("../../models/leftad");
 class Uipagescontroller {
- home = async (req, res) => {
+home = async (req, res) => {
   try {
 
     // ----- LIVE VIDEO -----
@@ -43,38 +43,49 @@ class Uipagescontroller {
       sports: Sports,
       technology: Technology,
       world: World,
+      live: Live
     };
 
     const sections = {};
 
-    // Fetch each section and add section key to every item
+    // 🔥 UNIVERSAL REVERSE ORDER (LATEST → OLDEST)
     for (const key of Object.keys(sectionModels)) {
       const rawData = await sectionModels[key]
         .find()
-        .sort({ createdAt: -1 })
+        .sort({ updatedAt: -1, createdAt: -1 })   // ⬅ FIXED REVERSE ORDER
         .limit(6)
         .lean();
 
-      // Add URL + section field
       sections[key] = rawData.map((item) => ({
         ...item,
         section: key,
-        url: `/${key}/${item._id}`,
+        url: `/${key}/${item._id}`,     // dynamic section link
       }));
     }
 
-    // ----- TRENDING NEWS (Latest from all sections) -----
-
+    // ----- TRENDING NEWS -----
     let trendingArr = [];
 
     for (const key of Object.keys(sections)) {
       trendingArr = trendingArr.concat(sections[key]);
     }
 
-    // Sort by date and pick latest 10
     const trendingNews = trendingArr
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+      .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
       .slice(0, 10);
+
+    // ----- TOP NEWS -----
+    let topArr = [];
+
+    for (const key of Object.keys(sections)) {
+      topArr = topArr.concat(sections[key]);
+    }
+
+    topArr = topArr.sort((a, b) => 
+      new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)
+    );
+
+    const topNews = topArr.slice(0, 24);
 
     // ----- ALL ADS -----
     const ads = await Ads.find({ status: "active" }).lean();
@@ -88,13 +99,13 @@ class Uipagescontroller {
     });
 
     // ----- RENDER PAGE -----
-
     res.render("ui/home", {
       title: "E-TIMES-INDIA-24",
       user: req.user || null,
       livevideo,
       sections,
       trendingNews,
+      topNews,
       sectionAds,
       rightads,
       leftads,
@@ -105,6 +116,8 @@ class Uipagescontroller {
     res.status(500).send("Server Error");
   }
 };
+
+
 
 
   login = async (req, res) => {
@@ -143,6 +156,8 @@ class Uipagescontroller {
 
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+
+      const ads = await Ads.find()
       res.render("ui/allnews", {
         title: "business",
         user: req.user || null,
@@ -151,6 +166,7 @@ class Uipagescontroller {
         pageCount,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error(error);
@@ -177,6 +193,8 @@ class Uipagescontroller {
       //     res.json({ html });
       //   });
       // }
+      const ads = await Ads.find()
+
 
       // Render full page
       res.render("ui/allnews", {
@@ -187,6 +205,7 @@ class Uipagescontroller {
         pageCount,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error(error);
@@ -213,6 +232,7 @@ class Uipagescontroller {
       //     res.json({ html });
       //   });
       // }
+      const ads = await Ads.find()
 
       // Render full page
       res.render("ui/allnews", {
@@ -223,6 +243,7 @@ class Uipagescontroller {
         pageCount,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error(error);
@@ -249,6 +270,7 @@ class Uipagescontroller {
       //     res.json({ html });
       //   });
       // }
+      const ads = await Ads.find()
 
       // Render full page
       res.render("ui/allnews", {
@@ -259,6 +281,7 @@ class Uipagescontroller {
         pageCount,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error(error);
@@ -285,6 +308,7 @@ class Uipagescontroller {
       //     res.json({ html });
       //   });
       // }
+      const ads = await Ads.find()
 
       // Render full page
       res.render("ui/allnews", {
@@ -295,6 +319,7 @@ class Uipagescontroller {
         pageCount,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error(error);
@@ -323,6 +348,8 @@ class Uipagescontroller {
       // }
 
       // Render full page
+      const ads = await Ads.find()
+
       res.render("ui/allnews", {
         title: "education",
         user: req.user || null,
@@ -331,6 +358,7 @@ class Uipagescontroller {
         pageCount,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error(error);
@@ -357,6 +385,7 @@ class Uipagescontroller {
       //     res.json({ html });
       //   });
       // }
+      const ads = await Ads.find()
 
       // Render full page
       res.render("ui/allnews", {
@@ -367,6 +396,7 @@ class Uipagescontroller {
         pageCount,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error(error);
@@ -393,6 +423,7 @@ class Uipagescontroller {
       //     res.json({ html });
       //   });
       // }
+      const ads = await Ads.find()
 
       // Render full page
       res.render("ui/allnews", {
@@ -403,6 +434,7 @@ class Uipagescontroller {
         pageCount,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error(error);
@@ -422,6 +454,7 @@ class Uipagescontroller {
         Business.countDocuments(),
       ]);
       const pageCount = Math.ceil(count / limit);
+      const ads = await Ads.find()
 
       // If AJAX, just send the grid HTML
       // if (req.xhr) {
@@ -439,6 +472,7 @@ class Uipagescontroller {
         pageCount,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error(error);
@@ -465,6 +499,7 @@ class Uipagescontroller {
       //     res.json({ html });
       //   });
       // }
+      const ads = await Ads.find()
 
       // Render full page
       res.render("ui/allnews", {
@@ -475,6 +510,7 @@ class Uipagescontroller {
         pageCount,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error(error);
@@ -503,6 +539,8 @@ class Uipagescontroller {
       // }
 
       // Render full page
+      const ads = await Ads.find()
+
       res.render("ui/allnews", {
         title: "technology",
         user: req.user || null,
@@ -511,6 +549,7 @@ class Uipagescontroller {
         pageCount,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error(error);
@@ -537,6 +576,7 @@ class Uipagescontroller {
       //     res.json({ html });
       //   });
       // }
+      const ads = await Ads.find()
 
       // Render full page
       res.render("ui/allnews", {
@@ -547,6 +587,7 @@ class Uipagescontroller {
         pageCount,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error(error);
@@ -573,6 +614,7 @@ class Uipagescontroller {
       //     res.json({ html });
       //   });
       // }
+      const ads = await Ads.find()
 
       // Render full page
       res.render("ui/allnews", {
@@ -583,6 +625,7 @@ class Uipagescontroller {
         pageCount,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error(error);
@@ -631,12 +674,14 @@ class Uipagescontroller {
 
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
 
       res.render("ui/plans", {
         plans,
         user: req.user || null,
         rightads,
         leftads,
+        ads
       });
     } catch (err) {
       console.error(err);
@@ -654,12 +699,15 @@ class Uipagescontroller {
       const razorpayKey = process.env.RAZORPAY_KEY_ID;
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
+
       res.render("ui/purchase", {
         plan,
         razorpayKey,
         user: req.user,
         rightads,
         leftads,
+        ads
       });
     } catch (err) {
       res.status(500).send("Server error loading purchase page");
@@ -670,11 +718,14 @@ class Uipagescontroller {
     try {
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
+
       res.render("ui/terms", {
         title: "terms",
         user: req.user,
         rightads,
         leftads,
+        ads
       });
     } catch {
       res.status(500).send("Server error loading purchase page");
@@ -685,11 +736,14 @@ class Uipagescontroller {
     try {
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
+
       res.render("ui/privacy", {
         title: "terms",
         user: req.user,
         rightads,
         leftads,
+        ads
       });
     } catch {
       res.status(500).send("Server error loading purchase page");
@@ -743,6 +797,7 @@ class Uipagescontroller {
 
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
 
       // Pass data to EJS template
       res.render("ui/detail", {
@@ -759,6 +814,7 @@ class Uipagescontroller {
         user: req.user || null,
         rightads,
         leftads, // For future login features
+        ads
       });
     } catch (error) {
       console.error("Error in getNewsDetails:", error);
@@ -814,6 +870,8 @@ class Uipagescontroller {
       };
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
+
       // Pass data to EJS template
       res.render("ui/detail", {
         title: "crime",
@@ -829,6 +887,7 @@ class Uipagescontroller {
         user: req.user || null,
         rightads,
         leftads, // For future login features
+        ads
       });
     } catch (error) {
       console.error("Error in getNewsDetails:", error);
@@ -864,6 +923,8 @@ class Uipagescontroller {
         .lean();
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
+
       // Render the page with full news data
       res.render("ui/detail", {
         title: "national/news",
@@ -873,6 +934,7 @@ class Uipagescontroller {
         user: req.user || null,
         rightads,
         leftads,
+        ads
       });
     } catch (error) {
       console.error("Error in getNationalNewsDetails:", error);
@@ -928,6 +990,8 @@ class Uipagescontroller {
       };
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
+
       // Pass data to EJS template
       res.render("ui/detail", {
         title: "world",
@@ -943,6 +1007,7 @@ class Uipagescontroller {
         user: req.user || null,
         rightads,
         leftads, // For future login features
+        ads
       });
     } catch (error) {
       console.error("Error in getNewsDetails:", error);
@@ -998,6 +1063,8 @@ class Uipagescontroller {
       };
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
+
       // Pass data to EJS template
       res.render("ui/detail", {
         title: "sports",
@@ -1013,6 +1080,7 @@ class Uipagescontroller {
         user: req.user || null,
         rightads,
         leftads, // For future login features
+        ads
       });
     } catch (error) {
       console.error("Error in getNewsDetails:", error);
@@ -1069,6 +1137,7 @@ class Uipagescontroller {
 
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
 
       // Pass data to EJS template
       res.render("ui/detail", {
@@ -1085,6 +1154,7 @@ class Uipagescontroller {
         user: req.user || null,
         rightads,
         leftads, // For future login features
+        ads
       });
     } catch (error) {
       console.error("Error in getNewsDetails:", error);
@@ -1140,6 +1210,8 @@ class Uipagescontroller {
       };
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
+
       // Pass data to EJS template
       res.render("ui/detail", {
         title: "technology",
@@ -1155,6 +1227,7 @@ class Uipagescontroller {
         user: req.user || null,
         rightads,
         leftads, // For future login features
+        ads
       });
     } catch (error) {
       console.error("Error in getNewsDetails:", error);
@@ -1210,6 +1283,8 @@ class Uipagescontroller {
       };
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
+
       // Pass data to EJS template
       res.render("ui/detail", {
         title: "entertainment",
@@ -1225,6 +1300,7 @@ class Uipagescontroller {
         user: req.user || null,
         rightads,
         leftads, // For future login features
+        ads
       });
     } catch (error) {
       console.error("Error in getNewsDetails:", error);
@@ -1281,6 +1357,7 @@ class Uipagescontroller {
 
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
 
       // Pass data to EJS template
       res.render("ui/detail", {
@@ -1297,6 +1374,7 @@ class Uipagescontroller {
         user: req.user || null,
         rightads,
         leftads, // For future login features
+        ads
       });
     } catch (error) {
       console.error("Error in getNewsDetails:", error);
@@ -1352,6 +1430,7 @@ class Uipagescontroller {
       };
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
 
       // Pass data to EJS template
       res.render("ui/detail", {
@@ -1368,6 +1447,7 @@ class Uipagescontroller {
         user: req.user || null,
         rightads,
         leftads, // For future login features
+        ads
       });
     } catch (error) {
       console.error("Error in getNewsDetails:", error);
@@ -1423,6 +1503,8 @@ class Uipagescontroller {
       };
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
+
       // Pass data to EJS template
       res.render("ui/detail", {
         title: "science",
@@ -1438,6 +1520,7 @@ class Uipagescontroller {
         user: req.user || null,
         rightads,
         leftads, // For future login features
+        ads
       });
     } catch (error) {
       console.error("Error in getNewsDetails:", error);
@@ -1494,6 +1577,7 @@ class Uipagescontroller {
 
       const rightads = await rightad.find();
       const leftads = await leftad.find();
+      const ads = await Ads.find()
 
       // Pass data to EJS template
       res.render("ui/detail", {
@@ -1510,6 +1594,7 @@ class Uipagescontroller {
         user: req.user || null,
         rightads,
         leftads, // For future login features
+        ads
       });
     } catch (error) {
       console.error("Error in getNewsDetails:", error);
@@ -1563,6 +1648,7 @@ const rightads = await rightad.find();
           minute: "2-digit",
         });
       };
+      const ads = await Ads.find()
       
       // Pass data to EJS template
       res.render("ui/detail", {
@@ -1579,6 +1665,7 @@ const rightads = await rightad.find();
           formattedDate: formatDate(item.createdAt),
         })),
         user: req.user || null,
+        ads
        // For future login features
       });
     } catch (error) {

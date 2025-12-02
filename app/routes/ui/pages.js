@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const uipagescontroller = require('../../controller/ui/pages');
 const { protect } = require('../../middleware/auth');
-
+const {generateAndShareVideo} = require("../../controller/ui/genaratedvideo")
 // Correct order matters!
 router.get('/', protect,uipagescontroller.home);        // Home page
 router.get('/login', uipagescontroller.login);  // Login page
@@ -42,6 +42,8 @@ router.get("/education/:id",protect,uipagescontroller.getEducationNewsDetails)
 router.get("/health/:id",protect,uipagescontroller.getHealthDetails)
 router.get("/sports/:id",protect,uipagescontroller.getSportsNewsDetails)
 router.get("/live/:id",protect,uipagescontroller.getLiveDetails)
+router.get("/generate/:id",generateAndShareVideo)
+
 
 
 

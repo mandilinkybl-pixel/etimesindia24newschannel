@@ -1,6 +1,5 @@
 const express = require("express")
-const National = require("../../models/National")
-const app =express.Router()
+const app =express.Router();
 
 
 app.use("/",require("./pages"))

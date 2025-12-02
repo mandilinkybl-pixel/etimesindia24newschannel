@@ -3,6 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="google-adsense-account" content="ca-pub-7964315381421081">
     <title>All Politics News | E TIMES INDIA * 24</title>
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
@@ -857,9 +858,114 @@ width:auto;
   </section>
 
   <!-- AD -->
-  <div style="text-align:center;margin:30px 0;">
-    <img src="/logo/logo.png" style="width:100%;max-width:900px;border-radius:8px;" loading="lazy">
-  </div>
+<style>
+  .ads-slider {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: auto;
+    overflow: hidden;
+    border-radius: 10px;
+  }
+
+  .ads-slide {
+    display: none;
+    width: 100%;
+  }
+
+  .ads-slide img,
+  .ads-slide video {
+    width: 100%;
+    height: 450px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+
+  .ads-prev, .ads-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 22px;
+    border-radius: 50%;
+    z-index: 5;
+  }
+
+  .ads-prev { left: 10px; }
+  .ads-next { right: 10px; }
+</style>
+
+<div class="ads-slider" id="adsSlider">
+
+  <% ads.forEach((ad, index) => { %>
+    <div class="ads-slide" style="<%= index === 0 ? 'display:block' : '' %>">
+
+      <% if (ad.mediaType === "image") { %>
+        <a href="<%= ad.link || '#' %>" target="_blank">
+          <img src="<%= ad.mediaUrl %>">
+        </a>
+
+      <% } else if (ad.mediaType === "video") { %>
+        <video autoplay muted loop>
+          <source src="<%= ad.mediaUrl %>" type="video/mp4">
+        </video>
+      <% } %>
+
+    </div>
+  <% }) %>
+
+  <button class="ads-prev" onclick="moveSlide(-1)">❮</button>
+  <button class="ads-next" onclick="moveSlide(1)">❯</button>
+</div>
+
+<script>
+let currentSlide = 0;
+const slides = document.querySelectorAll('.ads-slide');
+
+function showSlide(index) {
+  slides.forEach(slide => slide.style.display = 'none');
+  slides[index].style.display = 'block';
+}
+
+function moveSlide(n) {
+  currentSlide += n;
+
+  if (currentSlide < 0) currentSlide = slides.length - 1;
+  if (currentSlide >= slides.length) currentSlide = 0;
+
+  showSlide(currentSlide);
+}
+
+// 🔄 Auto-slide every 4 seconds
+let autoSlide = setInterval(() => moveSlide(1), 4000);
+
+
+// 🟦 Mobile Swipe Support
+let startX = 0;
+let endX = 0;
+const slider = document.getElementById("adsSlider");
+
+slider.addEventListener("touchstart", e => {
+  startX = e.touches[0].clientX;
+});
+
+slider.addEventListener("touchend", e => {
+  endX = e.changedTouches[0].clientX;
+
+  let diff = startX - endX;
+
+  if (Math.abs(diff) > 50) {  
+    if (diff > 0) moveSlide(1);     // Swipe LEFT → Next slide
+    else moveSlide(-1);             // Swipe RIGHT → Prev slide
+  }
+});
+</script>
+
+
 
   <!-- HEADER -->
   <div style="display:flex;justify-content:space-between;align-items:center;

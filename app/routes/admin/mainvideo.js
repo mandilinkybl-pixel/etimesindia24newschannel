@@ -10,5 +10,7 @@ router.post("/", isAdmin, upload.fields([
   { name: 'videoFile', maxCount: 1 },
   { name: 'posterFile', maxCount: 1 }
 ]), adminLiveController.postAdminLive);
+router.get("/download-overlay/:id", isAdmin, adminLiveController.downloadVideoWithOverlay);
+
 
 module.exports = router;

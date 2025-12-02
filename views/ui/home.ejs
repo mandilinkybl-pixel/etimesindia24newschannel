@@ -4,6 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>E TIMES INDIA * 24 - Live Breaking News</title>
+    <meta name="google-adsense-account" content="ca-pub-7964315381421081">
     <link
       href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"
       rel="stylesheet"
@@ -858,7 +859,7 @@ width:auto;
       color: #a00000;
     "
   >
-    <img src="./logo/tag.png" alt="" height="40px">
+    <img src="./logo/tag.png" alt="" height="30px">
 
     <div
       id="typingText"
@@ -946,10 +947,11 @@ width:auto;
     style="
       position: absolute;
       top: 3px;
-      right: 10px;
-      font-size: 10px;
+      right: 1px;
+      font-size: 11px;
       background: rgb(255, 255, 255);
-      padding: 0px;
+      padding: 0px ;
+
       border-radius: 4px;
       color: #8b0000fd;
       z-index: 20;
@@ -963,7 +965,7 @@ width:auto;
       src="/logo/logo.png"
       style="width: 60px; height: auto;"
     />
-    <span id="currentTime"></span>
+    <span id="currentTime" style="padding-right: 10px; "></span>
   </div>
 
   <!-- MARQUEE -->
@@ -995,6 +997,8 @@ width:auto;
       Loading...
     </span>
   </div>
+
+  
 </div>
 
 <script>
@@ -1062,6 +1066,87 @@ width:auto;
 
   typingAnimation();
 </script>
+<div style="text-align:center; margin:30px 0;">
+  <button id="generateBtn" onclick="generateAndShare()" 
+    style="
+      background:#a00000;
+      color:white;
+      padding:15px 35px;
+      border:none;
+      border-radius:8px;
+      font-size:18px;
+      font-weight:bold;
+      cursor:pointer;
+      box-shadow:0 6px 20px rgba(160,0,0,0.5);
+      transition: all 0.3s;
+    ">
+ Share Branded Video
+  </button>
+
+  <div id="status" style="margin-top:20px; min-height:50px;"></div>
+</div>
+
+<script>
+async function generateAndShare() {
+  const btn = document.getElementById("generateBtn");
+  const statusDiv = document.getElementById("status");
+
+  // Reset & show loading
+  btn.disabled = true;
+  btn.style.opacity = "0.7";
+  statusDiv.innerHTML = `
+    <div style="color:#ff9800; font-weight:bold; font-size:18px;">
+      Generating your branded video...<br>
+      <small>Please wait 10–40 seconds</small>
+    </div>
+  `;
+
+  try {
+    const videoId = "<%= livevideo._id %>"; // Make sure this exists in your EJS template
+    const response = await fetch(`/generate/${videoId}`, { method: "GET" });
+
+    if (response.ok) {
+      // Success → replace entire page with the beautiful share page
+      const html = await response.text();
+      document.open();
+      document.write(html);
+      document.close();
+    } else {
+      // FAILED → Show "Try Again" button
+      throw new Error(await response.text());
+    }
+  } catch (err) {
+    console.error(err);
+
+    statusDiv.innerHTML = `
+      <div style="color:#ff0000; font-weight:bold; padding:15px; background:rgba(255,0,0,0.15); border-radius:8px; border:1px solid #ff4444;">
+        Generation Failed!<br>
+        <small>Server busy or video issue</small>
+      </div>
+      <button onclick="generateAndShare()" 
+        style="
+          margin-top:15px;
+          background:#ff0000;
+          color:white;
+          padding:12px 30px;
+          border:none;
+          border-radius:50px;
+          font-weight:bold;
+          cursor:pointer;
+          box-shadow:0 4px 15px rgba(255,0,0,0.4);
+        ">
+        Try Again
+      </button>
+    `;
+
+    // Re-enable main button
+    btn.disabled = false;
+    btn.style.opacity = "1";
+    btn.textContent = "Generate & Share Branded Video";
+  }
+}
+</script>
+
 <%
 function renderCards(newsArray, sectionName) { %>
 <div style="display:flex; flex-wrap:wrap; justify-content:center; padding:0 10px;">
@@ -1190,10 +1275,169 @@ function renderCards(newsArray, sectionName) { %>
   <% }) %>
 </div>
 <% } %>
+<!-- TOP NEWS TITLE -->
+<div style="
+    padding:15px 20px; 
+    background:#a00000; 
+    color:#fff; 
+    margin:30px 15px 10px; 
+    border-radius:12px;
+">
+    <h2 style="margin:0; font-size:1.6rem;">Top News</h2>
+</div>
+
+
+<!-- RESPONSIVE SCROLLABLE GRID -->
+<div class="topnews-scroll">
+  <div class="topnews-grid">
+
+    <% (topNews || []).reverse().forEach(news => { 
+        const vidTimeId = `nowtime-${news._id}`;
+        const typingTextId = `typingText-${news._id}`;
+    %>
+
+      <!-- CARD -->
+      <div class="grid-item">
+        <a href="/<%= news.section %>/<%= news._id %>"
+          style="display:block; background:#fff; border-radius:12px; box-shadow:0 1.5px 14px #a000003a;
+                overflow:hidden; text-decoration:none; color:#222; 
+                border-left:7px solid #a00000; position:relative;">
+
+          <% if (news.mediaType === "image") { %>
+          <div style="position:absolute; top:8px; left:0; width:70px; height:26px; background:#a00000ee; color:#fff;
+                 font-size:13px; font-weight:600; display:flex; align-items:center; justify-content:center;
+                 border-radius:0 0 8px 0; z-index:30;">
+            NEW
+          </div>
+          <% } %>
+
+          <% if(news.mediaType==='image' && news.image) { %>
+            <img src="<%= news.image %>" style="width:100%; height:170px; object-fit:cover;">
+          
+          <% } else if(news.mediaType==='video' && news.video) { %>
+            <div style="position: relative; width: 100%; background:#fff; overflow:hidden;">
+              
+              <div style="position:absolute; top:0px; left:0; width:100%; padding:0 5px;
+                   display:flex; justify-content:left; align-items:center; z-index:10; color:#a00000; gap:8px;">
+                <img src="/logo/tag.png" height="20px" style="margin-top:17px;">
+                <div id="<%= typingTextId %>"
+                     style="font-size:10px; font-weight:600; white-space:nowrap; overflow:hidden; 
+                            border-right:3px solid #a00000; padding:0 5px; color:#a00000; max-width:260px;">
+                </div>
+              </div>
+
+              <script>
+              (function(){
+                var text = `<%- JSON.stringify(news.headline) %>`;
+                var el = document.getElementById("<%= typingTextId %>");
+                var i = 0;
+                function type(){
+                  if(i <= text.length){
+                    el.textContent = text.substring(0, i);
+                    i++;
+                    setTimeout(type, 28);
+                  }
+                }
+                type();
+              })();
+              </script>
+
+              <video controls poster="<%= news.image || '/logo/logo.png' %>" 
+                     style="width:100%; margin-top:40px; border-radius:5px; max-height:200px; object-fit:cover;">
+                <source src="<%= news.video %>" type="video/mp4">
+              </video>
+
+              <div style="position:absolute; top:3px; right:10px; font-size:10px; background:#fff; 
+                   padding:3px 7px; border-radius:4px; color:#8b0000; z-index:20; 
+                   display:flex; align-items:center; flex-direction:column; font-weight:bold;">
+                <img src="/logo/logo.png" style="width:44px; margin-bottom:2px;">
+                <span id="<%= vidTimeId %>"></span>
+              </div>
+
+              <script>
+              (function(){
+                var span = document.getElementById("<%= vidTimeId %>");
+                function update(){
+                  var d = new Date();
+                  span.textContent = String(d.getHours()).padStart(2,"0") + ":" + String(d.getMinutes()).padStart(2,"0");
+                }
+                update();
+                setInterval(update, 1000);
+              })();
+              </script>
+
+              <div style="background:#a00000; padding:7px 0 7px 10px; position:absolute; bottom:-5px; 
+                   width:100%; font-size:15px; font-weight:bold; white-space:nowrap; overflow:hidden; 
+                   color:#fff; z-index:20;">
+                <span style="display:inline-block; animation:scroll 12s linear infinite;">
+                  <%= news.description.length > 90 ? news.description.substring(0,90) + "..." : news.description %>
+                </span>
+              </div>
+            </div>
+
+          <% } else { %>
+            <img src="/logo/logo.png" style="width:100%; height:170px; object-fit:cover;">
+          <% } %>
+
+          <div style="padding:15px 18px 13px 18px;">
+            <h3 style="margin-bottom:7px; font-size:1.09rem; font-weight:700; color:#a00000e0;">
+              <%= news.headline %>
+            </h3>
+            <p style="font-size:0.98rem; color:#222; margin-bottom:9px;">
+              <%= news.description.length>95 ? news.description.substr(0,92)+'...' : news.description %>
+            </p>
+            <small style="color:#a00000a2; font-size:11px;">
+              Updated <%= new Date(news.updatedAt||news.createdAt).toLocaleDateString() %>
+            </small>
+          </div>
+
+        </a>
+      </div>
+
+    <% }) %>
+
+  </div>
+</div>
+
+
+
+<!-- GRID + SCROLL CSS -->
+<style>
+.topnews-scroll {
+    max-height: 780px;
+    overflow-y: auto;
+    padding: 10px 10px 20px 10px;
+}
+
+.topnews-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);  /* Desktop */
+    gap: 20px;
+}
+
+/* Tablet */
+@media (max-width: 900px) {
+  .topnews-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Mobile */
+@media (max-width: 600px) {
+  .topnews-grid {
+    grid-template-columns: repeat(1, 1fr);
+  }
+}
+
+/* Scrollbar */
+.topnews-scroll::-webkit-scrollbar { width: 8px; }
+.topnews-scroll::-webkit-scrollbar-thumb { background:#a00000; border-radius:10px; }
+</style>
 
 
 <% 
 const sectionList = [
+{ key: 'live', label: 'New Live' },
   { key: 'business', label: 'Business' },
   { key: 'crime', label: 'Crime' },
   { key: 'education', label: 'Education' },

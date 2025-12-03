@@ -2,10 +2,20 @@ const politics = require("../../models/Politics");
 const fs = require("fs");
 const path = require("path");
 const ffmpeg = require("fluent-ffmpeg");
-const ffmpegStatic = require("ffmpeg-static");
 const { createCanvas, loadImage } = require("canvas");
-ffmpeg.setFfmpegPath(ffmpegStatic);
+const ffmpegStatic = require("ffmpeg-static");
+const ffprobeStatic = require("ffprobe-static");
+const os = require("os");
 
+if (os.platform() === "win32") {
+  // Windows
+  ffmpeg.setFfmpegPath(ffmpegStatic);
+  ffmpeg.setFfprobePath(ffprobeStatic.path);
+} else {
+  // Linux (Hostinger)
+  ffmpeg.setFfmpegPath("/snap/bin/ffmpeg");
+  ffmpeg.setFfprobePath("/snap/bin/ffprobe");
+}
 // POST - Create news
 exports.postCreateNews = async (req, res) => {
   try {

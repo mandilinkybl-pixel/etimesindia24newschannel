@@ -184,9 +184,20 @@ exports.deleteNews = async (req, res) => {
 
 
 const ffmpeg = require("fluent-ffmpeg");
-const ffmpegStatic = require("ffmpeg-static");
 const { createCanvas, loadImage } = require("canvas");
-ffmpeg.setFfmpegPath(ffmpegStatic);
+const ffmpegStatic = require("ffmpeg-static");
+const ffprobeStatic = require("ffprobe-static");
+const os = require("os");
+
+if (os.platform() === "win32") {
+  // Windows
+  ffmpeg.setFfmpegPath(ffmpegStatic);
+  ffmpeg.setFfprobePath(ffprobeStatic.path);
+} else {
+  // Linux (Hostinger)
+  ffmpeg.setFfmpegPath("/snap/bin/ffmpeg");
+  ffmpeg.setFfprobePath("/snap/bin/ffprobe");
+}
 
 exports.downloadVideoWithOverlay = async (req, res) => {
   try {
@@ -216,12 +227,16 @@ exports.downloadVideoWithOverlay = async (req, res) => {
     /* ----------------------------------------------------------
        0) GET REAL VIDEO WIDTH & HEIGHT USING FFMPEG PROBE
        ----------------------------------------------------------*/
-    const metadata = await new Promise((resolve, reject) => {
-      ffmpeg.ffprobe(videoPath, (err, data) => {
-        if (err) reject(err);
-        else resolve(data);
-      });
-    });
+const metadata = await new Promise((resolve, reject) => {
+  ffmpeg.ffprobe(videoPath, (err, data) => {
+    if (err) {
+      console.error("FFPROBE ERROR:", err);
+      return reject(err);
+    }
+    resolve(data);
+  });
+});
+
 
     const stream = metadata.streams.find(s => s.width && s.height);
     const W = stream.width;

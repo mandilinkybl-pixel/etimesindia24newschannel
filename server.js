@@ -55,6 +55,8 @@ app.set('view engine', 'ejs');
 // ------------------------------
 app.use("/admin", require("./app/routes/admin/index"));
 app.use("/", require("./app/routes/ui/index"));
+app.use("/api", require("./app/routes/api"));
+
 
 
 // Global Error Handler for JSON APIs

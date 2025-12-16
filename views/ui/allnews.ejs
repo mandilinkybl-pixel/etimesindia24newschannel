@@ -412,7 +412,7 @@
         border: 8px solid #f3f3f3;
         border-top: 8px solid #c80000;
         border-radius: 50%;
-        animation: spin 1s linear infinite;
+        animation: spin 0.5s linear infinite;
       }
       @keyframes spin {
         to {
@@ -679,6 +679,48 @@ width:auto;
         color: #fff;
       }
     </style>
+    
+  <!-- AD -->
+<style>
+  .ads-slider {
+    position: relative;
+    width: 100%;
+    max-width: 900px;
+    margin: auto;
+    overflow: hidden;
+    border-radius: 10px;
+  }
+
+  .ads-slide {
+    display: none;
+    width: 100%;
+  }
+
+  .ads-slide img,
+  .ads-slide video {
+    width: 100%;
+    height: 450px;
+    object-fit: cover;
+    border-radius: 10px;
+  }
+
+  .ads-prev, .ads-next {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: rgba(0,0,0,0.5);
+    color: #fff;
+    border: none;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 22px;
+    border-radius: 50%;
+    z-index: 5;
+  }
+
+  .ads-prev { left: 10px; }
+  .ads-next { right: 10px; }
+</style>
   </head>
   <body>
     <div class="bg-spots"></div>
@@ -729,62 +771,8 @@ width:auto;
       .addEventListener('click', openSidebar);
   </script>
 
-          <div class="mandi-section">
-            <h2>Mandi Rates Today</h2>
-            <div class="mandi-grid">
-              <div class="mandi-city">
-                <h3>Delhi</h3>
-                <table class="mandi-table">
-                  <tr>
-                    <td>Wheat</td>
-                    <td>₹2,450/Qtl</td>
-                  </tr>
-                  <tr>
-                    <td>Rice</td>
-                    <td>₹3,800</td>
-                  </tr>
-                  <tr>
-                    <td>Maize</td>
-                    <td>₹1,950</td>
-                  </tr>
-                </table>
-              </div>
-              <div class="mandi-city">
-                <h3>Mumbai</h3>
-                <table class="mandi-table">
-                  <tr>
-                    <td>Tomato</td>
-                    <td>₹2,500</td>
-                  </tr>
-                  <tr>
-                    <td>Onion</td>
-                    <td>₹1,800</td>
-                  </tr>
-                  <tr>
-                    <td>Potato</td>
-                    <td>₹1,200</td>
-                  </tr>
-                </table>
-              </div>
-              <div class="mandi-city">
-                <h3>Kolkata</h3>
-                <table class="mandi-table">
-                  <tr>
-                    <td>Paddy</td>
-                    <td>₹2,100</td>
-                  </tr>
-                  <tr>
-                    <td>Sugarcane</td>
-                    <td>₹3,200</td>
-                  </tr>
-                  <tr>
-                    <td>Chilli</td>
-                    <td>₹4,500</td>
-                  </tr>
-                </table>
-              </div>
-            </div>
-          </div>
+          <%- include("layout/mandirate") %>
+
           
         <div class="left-ad-section" style="width:300px; margin-top: 20px;">
 
@@ -845,9 +833,8 @@ width:auto;
 </div>
       </aside>
 
-    <main>
-    <!-- Category Hero -->
-   <!-- HERO -->
+  <main>
+  <!-- Category Hero -->
   <section style="background:linear-gradient(135deg,#a00000,#d41414);color:#fff;text-align:center;padding:70px 20px;">
     <h1 style="margin:0;font-size:2.9rem;font-weight:800;">
       <%= title.charAt(0).toUpperCase() + title.slice(1).toLowerCase() %> News
@@ -857,174 +844,123 @@ width:auto;
     </p>
   </section>
 
-  <!-- AD -->
-<style>
-  .ads-slider {
-    position: relative;
-    width: 100%;
-    max-width: 900px;
-    margin: auto;
-    overflow: hidden;
-    border-radius: 10px;
-  }
+  <!-- Ads Slider -->
+  <div class="ads-slider" id="adsSlider">
+    <% ads.forEach((ad, index) => { %>
+      <div class="ads-slide" style="<%= index === 0 ? 'display:block' : '' %>">
+        <% if (ad.mediaType === "image") { %>
+          <a href="<%= ad.link || '#' %>" target="_blank">
+            <img src="<%= ad.mediaUrl %>">
+          </a>
+        <% } else if (ad.mediaType === "video") { %>
+          <video autoplay muted loop>
+            <source src="<%= ad.mediaUrl %>" type="video/mp4">
+          </video>
+        <% } %>
+      </div>
+    <% }) %>
 
-  .ads-slide {
-    display: none;
-    width: 100%;
-  }
+    <button class="ads-prev" onclick="moveSlide(-1)">❮</button>
+    <button class="ads-next" onclick="moveSlide(1)">❯</button>
+  </div>
 
-  .ads-slide img,
-  .ads-slide video {
-    width: 100%;
-    height: 450px;
-    object-fit: cover;
-    border-radius: 10px;
-  }
+  <script>
+    let currentSlide = 0;
+    const slides = document.querySelectorAll(".ads-slide");
 
-  .ads-prev, .ads-next {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(0,0,0,0.5);
-    color: #fff;
-    border: none;
-    padding: 10px 16px;
-    cursor: pointer;
-    font-size: 22px;
-    border-radius: 50%;
-    z-index: 5;
-  }
+    function showSlide(index) {
+      slides.forEach((slide) => (slide.style.display = "none"));
+      slides[index].style.display = "block";
+    }
 
-  .ads-prev { left: 10px; }
-  .ads-next { right: 10px; }
-</style>
+    function moveSlide(n) {
+      currentSlide += n;
+      if (currentSlide < 0) currentSlide = slides.length - 1;
+      if (currentSlide >= slides.length) currentSlide = 0;
+      showSlide(currentSlide);
+    }
 
-<div class="ads-slider" id="adsSlider">
+    // Auto-slide every 4 seconds
+    let autoSlide = setInterval(() => moveSlide(1), 4000);
 
-  <% ads.forEach((ad, index) => { %>
-    <div class="ads-slide" style="<%= index === 0 ? 'display:block' : '' %>">
+    // Mobile swipe support
+    let startX = 0;
+    let endX = 0;
+    const slider = document.getElementById("adsSlider");
 
-      <% if (ad.mediaType === "image") { %>
-        <a href="<%= ad.link || '#' %>" target="_blank">
-          <img src="<%= ad.mediaUrl %>">
-        </a>
+    slider.addEventListener("touchstart", (e) => {
+      startX = e.touches[0].clientX;
+    });
 
-      <% } else if (ad.mediaType === "video") { %>
-        <video autoplay muted loop>
-          <source src="<%= ad.mediaUrl %>" type="video/mp4">
-        </video>
-      <% } %>
+    slider.addEventListener("touchend", (e) => {
+      endX = e.changedTouches[0].clientX;
 
-    </div>
-  <% }) %>
+      let diff = startX - endX;
 
-  <button class="ads-prev" onclick="moveSlide(-1)">❮</button>
-  <button class="ads-next" onclick="moveSlide(1)">❯</button>
-</div>
+      if (Math.abs(diff) > 50) {
+        if (diff > 0) moveSlide(1); // Swipe LEFT → Next slide
+        else moveSlide(-1); // Swipe RIGHT → Prev slide
+      }
+    });
+  </script>
 
-<script>
-let currentSlide = 0;
-const slides = document.querySelectorAll('.ads-slide');
-
-function showSlide(index) {
-  slides.forEach(slide => slide.style.display = 'none');
-  slides[index].style.display = 'block';
-}
-
-function moveSlide(n) {
-  currentSlide += n;
-
-  if (currentSlide < 0) currentSlide = slides.length - 1;
-  if (currentSlide >= slides.length) currentSlide = 0;
-
-  showSlide(currentSlide);
-}
-
-// 🔄 Auto-slide every 4 seconds
-let autoSlide = setInterval(() => moveSlide(1), 4000);
-
-
-// 🟦 Mobile Swipe Support
-let startX = 0;
-let endX = 0;
-const slider = document.getElementById("adsSlider");
-
-slider.addEventListener("touchstart", e => {
-  startX = e.touches[0].clientX;
-});
-
-slider.addEventListener("touchend", e => {
-  endX = e.changedTouches[0].clientX;
-
-  let diff = startX - endX;
-
-  if (Math.abs(diff) > 50) {  
-    if (diff > 0) moveSlide(1);     // Swipe LEFT → Next slide
-    else moveSlide(-1);             // Swipe RIGHT → Prev slide
-  }
-});
-</script>
-
-
-
-  <!-- HEADER -->
-  <div style="display:flex;justify-content:space-between;align-items:center;
+  <!-- Header -->
+  <div
+    style="display:flex;justify-content:space-between;align-items:center;
        background:#a00000;color:#fff;padding:16px 25px;margin:20px 15px 15px;border-radius:12px;">
     <h2 style="margin:0;font-size:1.75rem;">All <%= title.charAt(0).toUpperCase() + title.slice(1) %> Stories</h2>
     <a href="/" style="color:#fff;text-decoration:none;font-weight:600;">Back to Home</a>
   </div>
 
-  <!-- GRID: 3 Cards Per Row -->
+  <!-- News Container (3 Cards Per Row) -->
   <div id="newsContainer" style="display:flex;flex-wrap:wrap;justify-content:center;gap:28px;padding:0 15px;max-width:1500px;margin:0 auto;">
-    
-    <!-- First page (24 cards) already rendered by server -->
-    <% news.forEach(function(item) { %>
-      <a href="/<%= title %>/<%= item._id %>" style="text-decoration:none;color:#222;display:block;">
-        <div style="background:#fff;border-radius:12px;overflow:hidden;
-                    box-shadow:0 2px 16px #a000003a;border-left:7px solid #a00000;
-                    max-width:380px;width:100%;transition:all 0.3s;">
+    <% news.forEach(function (item) { %>
+      <a href="javascript:void(0);"
+        onclick="handleCardClick(event, '<%= title %>', '<%= item._id %>', <%= !!user %>, <%= hasActiveSubscription %>)"
+        style="text-decoration:none;color:#222;display:block;position:relative;width:100%;max-width:380px;">
+        <div style="background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 2px 16px #a000003a;border-left:7px solid #a00000;width:100%;transition:all 0.3s;">
           
-          <% if(item.mediaType === 'video' && item.video) { %>
+          <!-- Media Section -->
+          <% if (item.mediaType === "video" && item.video) { %>
             <video controls poster="<%= item.image || '/logo/logo.png' %>"
-                   style="width:100%;height:190px;object-fit:cover;">
+              style="width:100%;height:190px;object-fit:cover;">
               <source src="<%= item.video %>" type="video/mp4">
             </video>
           <% } else { %>
             <img src="<%= item.image || `https://picsum.photos/seed/${item._id}/400/250` %>"
-                 alt="<%= item.headline %>" loading="lazy"
-                 style="width:100%;height:190px;object-fit:cover;">
+              alt="<%= item.headline %>" loading="lazy"
+              style="width:100%;height:190px;object-fit:cover;">
           <% } %>
 
+          <!-- Details Section -->
           <div style="padding:16px;">
             <div style="color:#a00000;font-size:12px;font-weight:600;margin-bottom:8px;">
-              <%= new Date(item.createdAt).toLocaleDateString("en-IN", {day:"numeric", month:"short", year:"numeric"}) %>
+              <%= new Date(item.createdAt).toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short",
+                year: "numeric",
+              }) %>
             </div>
             <h3 style="margin:0 0 10px;font-size:1.18rem;font-weight:700;line-height:1.3;">
               <%= item.headline %>
             </h3>
-            <p style="margin:0 0 12px;font-size:0.98rem;color:#444;line-height:1.5;">
-              <%= item.description.substring(0,140) %>...
+            <p style="margin:0;font-size:0.98rem;color:#444;">
+              <%= item.description.substring(0, 140) %>...
             </p>
-            <% if(item.location) { %>
-              <p style="margin:0;font-size:13px;color:#c80000;font-weight:600;">
-                <%= item.location %>
-              </p>
-            <% } %>
-            <% if(item.externalLink) { %>
-              <p style="margin:10px 0 0;">
-                <a href="<%= item.externalLink %>" target="_blank"
-                   style="color:#a00000;font-weight:600;text-decoration:none;">
-                  Read Full Story
-                </a>
-              </p>
-            <% } %>
           </div>
         </div>
+
+        <!-- Lock Overlay -->
+        <% if (!user || !hasActiveSubscription) { %>
+          <div style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);color:#fff;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:700;z-index:10;border-radius:12px;">
+            🔒 Subscribe to Unlock
+          </div>
+        <% } %>
       </a>
     <% }); %>
   </div>
 
-  <!-- Loading & End Message -->
+  <!-- Loading & End Messages -->
   <div id="loading" style="text-align:center;padding:50px;font-size:1.3rem;color:#a00000;display:none;">
     Loading more stories...
   </div>
@@ -1032,68 +968,24 @@ slider.addEventListener("touchend", e => {
     You've reached the end!
   </div>
 
-  <!-- AJAX Lazy Load Script -->
+  <!-- Lock Overlay Card Click Handling -->
   <script>
-    let currentPage = 2; // First page already loaded
-    let loading = false;
-    const category = "<%= title %>";
-    const totalPages = <%= pageCount %>;
+    function handleCardClick(event, section, newsId, isLoggedIn, hasSubscription) {
+      event.preventDefault();
 
-    async function loadMore() {
-      if (loading || currentPage > totalPages) return;
-      loading = true;
-      document.getElementById('loading').style.display = 'block';
-
-      try {
-        const res = await fetch(`/${category}?page=${currentPage}&ajax=1`);
-        const html = await res.text();
-
-        if (html.trim() === '' || currentPage > totalPages) {
-          document.getElementById('noMore').style.display = 'block';
-          document.getElementById('loading').style.display = 'none';
-          return;
-        }
-
-        const parser = new DOMParser();
-        const doc = parser.parseFromString(html, 'text/html');
-        const newCards = doc.querySelectorAll('#newsContainer > a');
-
-        const container = document.getElementById('newsContainer');
-        newCards.forEach(card => {
-          const wrapper = document.createElement('div');
-          wrapper.style.opacity = '0';
-          wrapper.style.transform = 'translateY(30px)';
-          wrapper.style.transition = 'all 0.6s ease';
-          wrapper.innerHTML = card.outerHTML;
-          container.appendChild(wrapper.firstChild);
-
-          setTimeout(() => {
-            wrapper.firstChild.style.opacity = '1';
-            wrapper.firstChild.style.transform = 'translateY(0)';
-          }, 100);
-        });
-
-        currentPage++;
-      } catch (err) {
-        console.error(err);
-      } finally {
-        loading = false;
-        document.getElementById('loading').style.display = 'none';
+      if (!isLoggedIn) {
+        // Redirect to login page
+        window.location.href = "/login";
+      } else if (!hasSubscription) {
+        // Redirect to subscription page
+        window.location.href = "/plans";
+      } else {
+        // Redirect to the news article page
+        window.location.href = `/${section}/${newsId}`;
       }
     }
-
-    // Trigger on scroll
-    window.addEventListener('scroll', () => {
-      if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 1000) {
-        loadMore();
-      }
-    });
   </script>
-    <!-- AD BLOCK -->
-    <div style="width: 100%; margin: 20px 0; text-align: center">
-      <img src="/logo/logo.png" style="width: 100%; max-width: 900px; border-radius: 6px" />
-    </div>
-  </main>
+</main>
 
       <aside class="right-sidebar">
 
@@ -1331,8 +1223,8 @@ slider.addEventListener("touchend", e => {
           document.getElementById("loader").style.opacity = "0";
           setTimeout(() => {
             document.getElementById("loader").style.display = "none";
-          }, 600);
-        }, 1500);
+          }, 50);
+        }, 50);
       };
 
       // Extended Politics News Data for All News Page

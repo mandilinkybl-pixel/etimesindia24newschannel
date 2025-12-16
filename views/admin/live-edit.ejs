@@ -111,10 +111,10 @@
         <input type="text" name="title" class="form-control" value="<%= live?.title || '' %>" required />
       </div>
 
-      <div class="mb-3">
-        <label class="form-label">Bottom Marquee Text</label>
-        <textarea name="marqueeText" class="form-control" rows="3" required><%= live?.marqueeText || '' %></textarea>
-      </div>
+   <div class="mb-3">
+  <label class="form-label">Bottom Marquee Text</label>
+  <textarea name="marqueeText" class="form-control" rows="3" maxlength="1000000" required><%= live?.marqueeText || '' %></textarea>
+</div>
 
       <div class="mb-3">
         <label class="form-label">Video Upload (Raw MP4/WebM - Optional)</label>

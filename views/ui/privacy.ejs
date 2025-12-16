@@ -406,7 +406,7 @@
         border: 8px solid #f3f3f3;
         border-top: 8px solid #c80000;
         border-radius: 50%;
-        animation: spin 1s linear infinite;
+        animation: spin 0.5s linear infinite;
       }
       @keyframes spin {
         to {
@@ -744,62 +744,8 @@ width:auto;
       .addEventListener('click', openSidebar);
   </script>
 
-          <div class="mandi-section">
-            <h2>Mandi Rates Today</h2>
-            <div class="mandi-grid">
-              <div class="mandi-city">
-                <h3>Delhi</h3>
-                <table class="mandi-table">
-                  <tr>
-                    <td>Wheat</td>
-                    <td>₹2,450/Qtl</td>
-                  </tr>
-                  <tr>
-                    <td>Rice</td>
-                    <td>₹3,800</td>
-                  </tr>
-                  <tr>
-                    <td>Maize</td>
-                    <td>₹1,950</td>
-                  </tr>
-                </table>
-              </div>
-              <div class="mandi-city">
-                <h3>Mumbai</h3>
-                <table class="mandi-table">
-                  <tr>
-                    <td>Tomato</td>
-                    <td>₹2,500</td>
-                  </tr>
-                  <tr>
-                    <td>Onion</td>
-                    <td>₹1,800</td>
-                  </tr>
-                  <tr>
-                    <td>Potato</td>
-                    <td>₹1,200</td>
-                  </tr>
-                </table>
-              </div>
-              <div class="mandi-city">
-                <h3>Kolkata</h3>
-                <table class="mandi-table">
-                  <tr>
-                    <td>Paddy</td>
-                    <td>₹2,100</td>
-                  </tr>
-                  <tr>
-                    <td>Sugarcane</td>
-                    <td>₹3,200</td>
-                  </tr>
-                  <tr>
-                    <td>Chilli</td>
-                    <td>₹4,500</td>
-                  </tr>
-                </table>
-              </div>
-            </div>
-          </div>
+          <%- include("layout/mandirate") %>
+
           
         <div class="left-ad-section" style="width:300px; margin-top: 20px;">
 
@@ -1105,8 +1051,8 @@ width:auto;
           document.getElementById("loader").style.opacity = "0";
           setTimeout(() => {
             document.getElementById("loader").style.display = "none";
-          }, 600);
-        }, 1500);
+          }, 50);
+        }, 50);
       };
     </script>
   </body>

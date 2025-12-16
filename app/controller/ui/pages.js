@@ -19,16 +19,136 @@ const MainLive = require("../../models/main_video");
 const Ads = require("../../models/ads"); // your ads model
 const rightad = require("../../models/rightad");
 const leftad = require("../../models/leftad");
+const user = require("../../models/user");
+
+// / Helper to get client IP
+const getClientIp = (req) => {
+  return (
+    req.ip ||
+    req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
+    req.connection?.remoteAddress ||
+    req.socket?.remoteAddress ||
+    "unknown"
+  );
+};
 class Uipagescontroller {
+
+// home = async (req, res) => {
+//   try {
+//     // ----- LIVE VIDEO (Latest Active One) -----
+//     const livevideo = await MainLive.findOne({ isActive: true })
+//       .sort({ createdAt: -1 })
+//       .lean(); // Use .lean() for performance
+
+//     // Check if user (by IP) has already liked this live video
+//     let hasLiked = false;
+//     if (livevideo) {
+//       const ip = getClientIp(req);
+//       hasLiked = livevideo.likedBy && livevideo.likedBy.includes(ip);
+//     }
+
+//     // ----- ADS -----
+//     const rightads = await rightad.find().lean();
+//     const leftads = await leftad.find().lean();
+
+//     // ----- ALL SECTIONS -----
+//     const sectionModels = {
+//       business: Business,
+//       crime: Crime,
+//       education: Education,
+//       entertainment: Entertainment,
+//       environment: Environment,
+//       health: Health,
+//       politics: Politics,
+//       science: Science,
+//       sports: Sports,
+//       technology: Technology,
+//       world: World,
+//       live: Live,
+//     };
+
+//     const sections = {};
+
+//     for (const key of Object.keys(sectionModels)) {
+//       const rawData = await sectionModels[key]
+//         .find()
+//         .sort({ updatedAt: -1, createdAt: -1 })
+//         .limit(6)
+//         .lean();
+
+//       sections[key] = rawData.map((item) => ({
+//         ...item,
+//         section: key,
+//         url: `/${key}/${item._id}`,
+//       }));
+//     }
+
+//     // ----- TRENDING NEWS -----
+//     let trendingArr = [];
+//     for (const key of Object.keys(sections)) {
+//       trendingArr = trendingArr.concat(sections[key]);
+//     }
+
+//     const trendingNews = trendingArr
+//       .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+//       .slice(0, 10);
+
+//     // ----- TOP NEWS -----
+//     let topArr = [];
+//     for (const key of Object.keys(sections)) {
+//       topArr = topArr.concat(sections[key]);
+//     }
+
+//     const topNews = topArr
+//       .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+//       .slice(0, 24);
+
+//     // ----- ALL ADS -----
+//     const ads = await Ads.find({ status: "active" }).lean();
+
+//     const sectionAds = {};
+//     Object.keys(sectionModels).forEach((key) => {
+//       const adsForSection = ads.filter(
+//         (ad) => ad.sectionKey === key || ad.sectionKey === "all"
+//       );
+//       sectionAds[key] = adsForSection;
+//     });
+
+//     // ----- RENDER HOME PAGE -----
+//     res.render("ui/home", {
+//       title: "E Times India 24 - Breaking News, Latest Updates",
+//       user: req.user || null,
+//       livevideo,         // Now includes views, likes, comments
+//       hasLiked,          // ← Critical for like button state
+//       sections,
+//       trendingNews,
+//       topNews,
+//       sectionAds,
+//       rightads,
+//       leftads,
+//     });
+
+//   } catch (error) {
+//     console.error("Home Page Error:", error);
+//     res.status(500).send("Server Error");
+//   }
+// };
+
+
 home = async (req, res) => {
   try {
+    // ----- LIVE VIDEO (Latest Active One) -----
+    const livevideo = await MainLive.findOne({ isActive: true }).sort({ createdAt: -1 }).lean()
 
-    // ----- LIVE VIDEO -----
-    const livevideo = await MainLive.findOne().sort({ createdAt: -1 });
+    let hasLiked = false
+    if (livevideo) {
+      const ip = getClientIp(req).clientIp // Get client IP address
+      hasLiked = livevideo.likedBy && livevideo.likedBy.includes(ip)
+    }
 
     // ----- ADS -----
-    const rightads = await rightad.find().lean();
-    const leftads = await leftad.find().lean();
+    const rightads = await rightad.find().lean()
+    const leftads = await leftad.find().lean()
 
     // ----- ALL SECTIONS -----
     const sectionModels = {
@@ -43,81 +163,93 @@ home = async (req, res) => {
       sports: Sports,
       technology: Technology,
       world: World,
-      live: Live
-    };
+      live: Live,
+    }
 
-    const sections = {};
-
-    // 🔥 UNIVERSAL REVERSE ORDER (LATEST → OLDEST)
+    const sections = {}
     for (const key of Object.keys(sectionModels)) {
-      const rawData = await sectionModels[key]
-        .find()
-        .sort({ updatedAt: -1, createdAt: -1 })   // ⬅ FIXED REVERSE ORDER
-        .limit(6)
-        .lean();
-
+      const rawData = await sectionModels[key].find().sort({ updatedAt: -1, createdAt: -1 }).limit(6).lean()
       sections[key] = rawData.map((item) => ({
         ...item,
         section: key,
-        url: `/${key}/${item._id}`,     // dynamic section link
-      }));
+        url: `/${key}/${item._id}`,
+      }))
     }
 
     // ----- TRENDING NEWS -----
-    let trendingArr = [];
-
+    let trendingArr = []
     for (const key of Object.keys(sections)) {
-      trendingArr = trendingArr.concat(sections[key]);
+      trendingArr = trendingArr.concat(sections[key])
     }
-
     const trendingNews = trendingArr
       .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
-      .slice(0, 10);
+      .slice(0, 10)
 
     // ----- TOP NEWS -----
-    let topArr = [];
-
+    let topArr = []
     for (const key of Object.keys(sections)) {
-      topArr = topArr.concat(sections[key]);
+      topArr = topArr.concat(sections[key])
     }
-
-    topArr = topArr.sort((a, b) => 
-      new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt)
-    );
-
-    const topNews = topArr.slice(0, 24);
+    const topNews = topArr
+      .sort((a, b) => new Date(b.updatedAt || b.createdAt) - new Date(a.updatedAt || a.createdAt))
+      .slice(0, 24)
 
     // ----- ALL ADS -----
-    const ads = await Ads.find({ status: "active" }).lean();
-
-    const sectionAds = {};
+    const ads = await Ads.find({ status: "active" }).lean()
+    const sectionAds = {}
     Object.keys(sectionModels).forEach((key) => {
-      const adsForSection = ads.filter(
-        (ad) => ad.sectionKey === key || ad.sectionKey === "all"
-      );
-      sectionAds[key] = adsForSection;
-    });
+      const adsForSection = ads.filter((ad) => ad.sectionKey === key || ad.sectionKey === "all")
+      sectionAds[key] = adsForSection
+    })
 
-    // ----- RENDER PAGE -----
+    let hasActiveSubscription = false
+    if (req.user) {
+      // Populate subscriptions to check status
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean()
+
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some((sub) => {
+          return sub.status === "active" && sub.endDate && new Date(sub.endDate) > new Date()
+        })
+      }
+    }
+
+    const sectionList = [
+  { key: 'live', label: 'New Live' },
+  { key: 'business', label: 'Business' },
+  { key: 'crime', label: 'Crime' },
+  { key: 'education', label: 'Education' },
+  { key: 'entertainment', label: 'Entertainment' },
+  { key: 'environment', label: 'Environment' },
+  { key: 'health', label: 'Health' },
+  { key: 'politics', label: 'Politics' },
+  { key: 'science', label: 'Science' },
+  { key: 'sports', label: 'Sports' },
+  { key: 'technology', label: 'Technology' },
+  { key: 'world', label: 'World' },
+];
+
+    // ----- RENDER HOME PAGE -----
     res.render("ui/home", {
-      title: "E-TIMES-INDIA-24",
+      title: "E Times India 24 - Breaking News, Latest Updates",
       user: req.user || null,
+      User: req.user || null,
+      hasActiveSubscription, // Pass subscription status to template
       livevideo,
+      hasLiked,
       sections,
       trendingNews,
       topNews,
       sectionAds,
       rightads,
       leftads,
-    });
-
+      sectionList,
+    })
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Server Error");
+    console.error("Home Page Error:", error)
+    res.status(500).send("Server Error")
   }
-};
-
-
+}
 
 
   login = async (req, res) => {
@@ -133,46 +265,54 @@ home = async (req, res) => {
     }
   };
 
-  getBusiness = async (req, res) => {
-    try {
-      const page = parseInt(req.query.page) || 1;
-      const limit = 24; // News per page
-      const skip = (page - 1) * limit;
 
-      const [business, count] = await Promise.all([
-        Business.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
-        Business.countDocuments(),
-      ]);
-      const pageCount = Math.ceil(count / limit);
+getBusiness = async (req, res) => {
+  try {
+    const page = parseInt(req.query.page) || 1; // Get the page number from the query
+    const limit = 24; // News items per page
+    const skip = (page - 1) * limit;
 
-      // If AJAX, just send the grid HTML
-      // if (req.xhr) {
-      //   return res.render('ui/partials/business-grid', { news: business }, (err, html) => {
-      //     res.json({ html });
-      //   });
-      // }
+    // Fetch paginated business news and total count
+    const [business, count] = await Promise.all([
+      Business.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
+      Business.countDocuments(),
+    ]);
 
-      // Render full page
+    const pageCount = Math.ceil(count / limit); // Calculate total pages
 
-      const rightads = await rightad.find();
-      const leftads = await leftad.find();
-
-      const ads = await Ads.find()
-      res.render("ui/allnews", {
-        title: "business",
-        user: req.user || null,
-        news: business,
-        page,
-        pageCount,
-        rightads,
-        leftads,
-        ads
-      });
-    } catch (error) {
-      console.error(error);
-      res.status(500).send("Server Error");
+    // Determine if the user has an active subscription
+    let hasActiveSubscription = false;
+    if (req.user) {
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean();
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some(
+          (sub) => sub.status === "active" && new Date(sub.endDate) > new Date()
+        );
+      }
     }
-  };
+
+    // Fetch ads
+    const rightads = await rightad.find(); // Ads for the right sidebar
+    const leftads = await leftad.find(); // Ads for the left sidebar
+    const ads = await Ads.find(); // General active ads
+
+    // Render the page with the required data
+    res.render("ui/allnews", {
+      title: "business",
+      user: req.user || null,
+      news: business,
+      page,
+      pageCount,
+      hasActiveSubscription, // Pass subscription status to template
+      rightads,
+      leftads,
+      ads,
+    });
+  } catch (error) {
+    console.error("Error in getBusiness:", error);
+    res.status(500).send("Server Error");
+  }
+};
 
   getcrime = async (req, res) => {
     try {
@@ -184,6 +324,15 @@ home = async (req, res) => {
         Crime.find().sort({ createdAt: -1 }).skip(skip).limit(limit),
         Business.countDocuments(),
       ]);
+       let hasActiveSubscription = false;
+    if (req.user) {
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean();
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some(
+          (sub) => sub.status === "active" && new Date(sub.endDate) > new Date()
+        );
+      }
+    }
       const pageCount = Math.ceil(count / limit);
       const rightads = await rightad.find();
       const leftads = await leftad.find();
@@ -202,6 +351,7 @@ home = async (req, res) => {
         user: req.user || null,
         news: business,
         page,
+         hasActiveSubscription,
         pageCount,
         rightads,
         leftads,
@@ -233,13 +383,22 @@ home = async (req, res) => {
       //   });
       // }
       const ads = await Ads.find()
-
+ let hasActiveSubscription = false;
+    if (req.user) {
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean();
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some(
+          (sub) => sub.status === "active" && new Date(sub.endDate) > new Date()
+        );
+      }
+    }
       // Render full page
       res.render("ui/allnews", {
         title: "national/news",
         user: req.user || null,
         news: business,
         page,
+         hasActiveSubscription,
         pageCount,
         rightads,
         leftads,
@@ -263,7 +422,15 @@ home = async (req, res) => {
         Business.countDocuments(),
       ]);
       const pageCount = Math.ceil(count / limit);
-
+ let hasActiveSubscription = false;
+    if (req.user) {
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean();
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some(
+          (sub) => sub.status === "active" && new Date(sub.endDate) > new Date()
+        );
+      }
+    }
       // If AJAX, just send the grid HTML
       // if (req.xhr) {
       //   return res.render('ui/partials/business-grid', { news: business }, (err, html) => {
@@ -279,6 +446,7 @@ home = async (req, res) => {
         news: business,
         page,
         pageCount,
+         hasActiveSubscription,
         rightads,
         leftads,
         ads
@@ -301,7 +469,15 @@ home = async (req, res) => {
         Business.countDocuments(),
       ]);
       const pageCount = Math.ceil(count / limit);
-
+ let hasActiveSubscription = false;
+    if (req.user) {
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean();
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some(
+          (sub) => sub.status === "active" && new Date(sub.endDate) > new Date()
+        );
+      }
+    }
       // If AJAX, just send the grid HTML
       // if (req.xhr) {
       //   return res.render('ui/partials/business-grid', { news: business }, (err, html) => {
@@ -316,6 +492,7 @@ home = async (req, res) => {
         user: req.user || null,
         news: business,
         page,
+         hasActiveSubscription,
         pageCount,
         rightads,
         leftads,
@@ -339,7 +516,15 @@ home = async (req, res) => {
         Business.countDocuments(),
       ]);
       const pageCount = Math.ceil(count / limit);
-
+ let hasActiveSubscription = false;
+    if (req.user) {
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean();
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some(
+          (sub) => sub.status === "active" && new Date(sub.endDate) > new Date()
+        );
+      }
+    }
       // If AJAX, just send the grid HTML
       // if (req.xhr) {
       //   return res.render('ui/partials/business-grid', { news: business }, (err, html) => {
@@ -356,6 +541,7 @@ home = async (req, res) => {
         news: business,
         page,
         pageCount,
+         hasActiveSubscription,
         rightads,
         leftads,
         ads
@@ -378,7 +564,15 @@ home = async (req, res) => {
         Business.countDocuments(),
       ]);
       const pageCount = Math.ceil(count / limit);
-
+ let hasActiveSubscription = false;
+    if (req.user) {
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean();
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some(
+          (sub) => sub.status === "active" && new Date(sub.endDate) > new Date()
+        );
+      }
+    }
       // If AJAX, just send the grid HTML
       // if (req.xhr) {
       //   return res.render('ui/partials/business-grid', { news: business }, (err, html) => {
@@ -394,6 +588,7 @@ home = async (req, res) => {
         news: business,
         page,
         pageCount,
+         hasActiveSubscription,
         rightads,
         leftads,
         ads
@@ -416,7 +611,15 @@ home = async (req, res) => {
         Business.countDocuments(),
       ]);
       const pageCount = Math.ceil(count / limit);
-
+ let hasActiveSubscription = false;
+    if (req.user) {
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean();
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some(
+          (sub) => sub.status === "active" && new Date(sub.endDate) > new Date()
+        );
+      }
+    }
       // If AJAX, just send the grid HTML
       // if (req.xhr) {
       //   return res.render('ui/partials/business-grid', { news: business }, (err, html) => {
@@ -432,6 +635,7 @@ home = async (req, res) => {
         news: business,
         page,
         pageCount,
+         hasActiveSubscription,
         rightads,
         leftads,
         ads
@@ -455,7 +659,15 @@ home = async (req, res) => {
       ]);
       const pageCount = Math.ceil(count / limit);
       const ads = await Ads.find()
-
+ let hasActiveSubscription = false;
+    if (req.user) {
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean();
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some(
+          (sub) => sub.status === "active" && new Date(sub.endDate) > new Date()
+        );
+      }
+    }
       // If AJAX, just send the grid HTML
       // if (req.xhr) {
       //   return res.render('ui/partials/business-grid', { news: business }, (err, html) => {
@@ -469,6 +681,7 @@ home = async (req, res) => {
         user: req.user || null,
         news: business,
         page,
+         hasActiveSubscription,
         pageCount,
         rightads,
         leftads,
@@ -492,7 +705,15 @@ home = async (req, res) => {
         Business.countDocuments(),
       ]);
       const pageCount = Math.ceil(count / limit);
-
+ let hasActiveSubscription = false;
+    if (req.user) {
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean();
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some(
+          (sub) => sub.status === "active" && new Date(sub.endDate) > new Date()
+        );
+      }
+    }
       // If AJAX, just send the grid HTML
       // if (req.xhr) {
       //   return res.render('ui/partials/business-grid', { news: business }, (err, html) => {
@@ -507,6 +728,7 @@ home = async (req, res) => {
         user: req.user || null,
         news: business,
         page,
+         hasActiveSubscription,
         pageCount,
         rightads,
         leftads,
@@ -530,7 +752,15 @@ home = async (req, res) => {
         Business.countDocuments(),
       ]);
       const pageCount = Math.ceil(count / limit);
-
+ let hasActiveSubscription = false;
+    if (req.user) {
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean();
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some(
+          (sub) => sub.status === "active" && new Date(sub.endDate) > new Date()
+        );
+      }
+    }
       // If AJAX, just send the grid HTML
       // if (req.xhr) {
       //   return res.render('ui/partials/business-grid', { news: business }, (err, html) => {
@@ -546,6 +776,7 @@ home = async (req, res) => {
         user: req.user || null,
         news: business,
         page,
+         hasActiveSubscription,
         pageCount,
         rightads,
         leftads,
@@ -569,7 +800,15 @@ home = async (req, res) => {
         Business.countDocuments(),
       ]);
       const pageCount = Math.ceil(count / limit);
-
+ let hasActiveSubscription = false;
+    if (req.user) {
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean();
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some(
+          (sub) => sub.status === "active" && new Date(sub.endDate) > new Date()
+        );
+      }
+    }
       // If AJAX, just send the grid HTML
       // if (req.xhr) {
       //   return res.render('ui/partials/business-grid', { news: business }, (err, html) => {
@@ -585,6 +824,7 @@ home = async (req, res) => {
         news: business,
         page,
         pageCount,
+         hasActiveSubscription,
         rightads,
         leftads,
         ads
@@ -607,7 +847,15 @@ home = async (req, res) => {
         Business.countDocuments(),
       ]);
       const pageCount = Math.ceil(count / limit);
-
+ let hasActiveSubscription = false;
+    if (req.user) {
+      const userWithSubs = await user.findById(req.user._id).populate("subscriptions").lean();
+      if (userWithSubs && userWithSubs.subscriptions) {
+        hasActiveSubscription = userWithSubs.subscriptions.some(
+          (sub) => sub.status === "active" && new Date(sub.endDate) > new Date()
+        );
+      }
+    }
       // If AJAX, just send the grid HTML
       // if (req.xhr) {
       //   return res.render('ui/partials/business-grid', { news: business }, (err, html) => {
@@ -623,6 +871,7 @@ home = async (req, res) => {
         news: business,
         page,
         pageCount,
+         hasActiveSubscription,
         rightads,
         leftads,
         ads
@@ -634,6 +883,7 @@ home = async (req, res) => {
   };
 
   getPlansPage = async (req, res) => {
+ 
     try {
       const dbPlans = await subscriptionplan
         .find({ status: "active" })
@@ -690,6 +940,9 @@ home = async (req, res) => {
   };
 
   renderPurchaseDetail = async (req, res) => {
+    if (!req.user || req.user === null) {
+      return res.redirect("/login");
+    }
     try {
       const planId = req.params.id;
       const plan = await subscriptionplan.findById(planId).lean();

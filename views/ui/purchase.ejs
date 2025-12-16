@@ -159,7 +159,7 @@
     }
     .loader .spinner {
       width: 80px; height: 80px; border: 8px solid #f3f3f3; border-top: 8px solid #c80000;
-      border-radius: 50%; animation: spin 1s linear infinite;
+      border-radius: 50%; animation: spin 0.5s linear infinite;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
@@ -258,8 +258,8 @@
     // Loader
     window.onload = () => setTimeout(() => {
       document.getElementById("loader").style.opacity = "0";
-      setTimeout(() => document.getElementById("loader").style.display = "none", 600);
-    }, 1000);
+      setTimeout(() => document.getElementById("loader").style.display = "none", 50);
+    }, 50);
 
     // Razorpay Payment
     document.getElementById("payBtn")?.addEventListener("click", () => {

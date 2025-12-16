@@ -1,0 +1,308 @@
+     <style>
+       
+        .mandi-section {
+          background-color: rgb(255, 0, 0);
+          margin-bottom: 40px;
+        }
+        #customize-btn {
+            display: block;
+            margin: 20px auto;
+            padding: 12px 30px;
+            background-color: #db3434;
+            color: white;
+            font-size: 16px;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: background-color 0.3s;
+        }
+        #customize-btn:hover {
+            background-color: #b92929;
+        }
+        .mandi-grid {
+            display: flex;
+            justify-content: center;
+            flex-wrap: wrap;
+            gap: 30px;
+        }
+        .mandi-city {
+            background: rgb(255, 0, 0);
+            border-radius: 12px;
+            padding: 20px;
+            width: 350px;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+            transition: transform 0.3s;
+        }
+        .mandi-city:hover {
+            transform: translateY(-5px);
+        }
+        .mandi-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+        .mandi-table td {
+            padding: 12px;
+            border-bottom: 1px solid #eee;
+            text-align: left;
+        }
+        .mandi-table td:first-child {
+            font-weight: bold;
+            color: #ffffff;
+        }
+        .mandi-table td:last-child {
+            text-align: right;
+            color: #ffffff;
+            font-weight: bold;
+        }
+        .empty-message {
+            text-align: center;
+            color: #ffffff;
+            font-size: 18px;
+            margin-top: 40px;
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.5);
+        }
+        .modal-content {
+            background-color: rgb(255, 0, 0);
+            margin: 10% auto;
+            padding: 30px;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            position: relative;
+        }
+        .close {
+            position: absolute;
+            top: 10px;
+            right: 20px;
+            color: #ffffff;
+            font-size: 32px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .close:hover {
+            color: #e74c3c;
+        }
+        select {
+            width: 100%;
+            padding: 12px;
+            margin: 12px 0;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            background-color: #f8f9fa;
+        }
+        select:disabled {
+            background-color: #eee;
+            cursor: not-allowed;
+        }
+        #submit-selection {
+            width: 100%;
+            padding: 14px;
+            background-color: #ae2727;
+            color: rgb(255, 255, 255);
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        #submit-selection:hover {
+            background-color: #9a8821;
+        }
+        #loading {
+            display: none;
+            text-align: center;
+            margin-top: 15px;
+            color: #db3434;
+            font-weight: bold;
+        }
+    </style>
+        <button id="customize-btn">Customize Mandi</button>
+    <div class="mandi-section">
+        <h2>Mandi Rates Today</h2>
+        <div class="mandi-grid" id="mandi-grid">
+            <div class="empty-message">Select a mandi to view today's rates</div>
+        </div>
+    </div>
+
+    <!-- Modal Popup -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>Select Mandi</h3>
+            <select id="state-select">
+                <option value="">Select State</option>
+            </select>
+            <select id="district-select" disabled>
+                <option value="">Select District</option>
+            </select>
+            <select id="mandi-select" disabled>
+                <option value="">Select Mandi</option>
+            </select>
+            <button id="submit-selection">View Rates</button>
+            <div id="loading">Loading...</div>
+        </div>
+    </div>
+
+    <script>
+        const apiBase = 'https://mandilink.in/api';
+
+        // Function to fetch and display rates for a selected mandi
+        async function fetchMandiRates(mandiName) {
+            const grid = document.getElementById('mandi-grid');
+            grid.innerHTML = '<div class="empty-message">Loading rates...</div>'; // Temporary message
+
+            try {
+                const response = await fetch(`${apiBase}/mandirates/search?mandiName=${encodeURIComponent(mandiName)}`);
+                const data = await response.json();
+
+                grid.innerHTML = ''; // Clear loading message
+
+                if (data.success && data.mandiRates.length > 0) {
+                    const mandi = data.mandiRates[0];
+
+                    const cityDiv = document.createElement('div');
+                    cityDiv.className = 'mandi-city';
+                    cityDiv.innerHTML = `
+                        <h3>${mandi.mandi}<br>
+                            <small style="color:#7f8c8d; font-size:14px;">${mandi.district}, ${mandi.state}</small>
+                        </h3>
+                    `;
+
+                    const table = document.createElement('table');
+                    table.className = 'mandi-table';
+
+                    mandi.commodities.forEach(com => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${com.commodity}</td>
+                            <td>₹${com.minimum} - ₹${com.maximum}/Qtl<br>
+                                <small style="color:white;">Arrival: ${com.estimatedArrival} bags</small>
+                            </td>
+                        `;
+                        table.appendChild(tr);
+                    });
+
+                    cityDiv.appendChild(table);
+                    grid.appendChild(cityDiv);
+                } else {
+                    grid.innerHTML = '<div class="empty-message">No rates found for this mandi.</div>';
+                }
+            } catch (error) {
+                console.error('Error fetching rates:', error);
+                grid.innerHTML = '<div class="empty-message">Failed to load rates. Please try again.</div>';
+            }
+        }
+
+        // NO default loading of Dabra or any mandi on page load
+
+        // Modal controls
+        const modal = document.getElementById('myModal');
+        const btn = document.getElementById('customize-btn');
+        const closeBtn = document.getElementsByClassName('close')[0];
+        const stateSelect = document.getElementById('state-select');
+        const districtSelect = document.getElementById('district-select');
+        const mandiSelect = document.getElementById('mandi-select');
+        const submitBtn = document.getElementById('submit-selection');
+        const loading = document.getElementById('loading');
+
+        btn.onclick = () => {
+            modal.style.display = 'block';
+            if (stateSelect.children.length === 1) loadStates(); // Load states only once
+        };
+        closeBtn.onclick = () => modal.style.display = 'none';
+        window.onclick = (e) => { if (e.target === modal) modal.style.display = 'none'; };
+
+        // Load States
+        async function loadStates() {
+            try {
+                const res = await fetch(`${apiBase}/fillter/states`);
+                const data = await res.json();
+                data.states.forEach(s => {
+                    const opt = document.createElement('option');
+                    opt.value = s._id;
+                    opt.textContent = s.name;
+                    stateSelect.appendChild(opt);
+                });
+            } catch (err) {
+                alert('Failed to load states');
+            }
+        }
+
+        // State → Districts
+        stateSelect.onchange = async () => {
+            const stateId = stateSelect.value;
+            districtSelect.innerHTML = '<option>Select District</option>';
+            mandiSelect.innerHTML = '<option>Select Mandi</option>';
+            districtSelect.disabled = true;
+            mandiSelect.disabled = true;
+
+            if (stateId) {
+                try {
+                    const res = await fetch(`${apiBase}/fillter/districts/${stateId}`);
+                    const data = await res.json();
+                    districtSelect.disabled = false;
+                    data.districts.forEach(d => {
+                        const opt = document.createElement('option');
+                        opt.value = d;
+                        opt.textContent = d;
+                        districtSelect.appendChild(opt);
+                    });
+                } catch (err) {
+                    console.error('Error loading districts:', err);
+                }
+            }
+        };
+
+        // District → Mandis
+        districtSelect.onchange = async () => {
+            const district = districtSelect.value;
+            mandiSelect.innerHTML = '<option>Select Mandi</option>';
+            mandiSelect.disabled = true;
+
+            if (district) {
+                try {
+                    const res = await fetch(`${apiBase}/fillter/mandis/${encodeURIComponent(district)}`);
+                    const data = await res.json();
+                    mandiSelect.disabled = false;
+                    data.mandis.forEach(m => {
+                        const opt = document.createElement('option');
+                        opt.value = m;
+                        opt.textContent = m;
+                        mandiSelect.appendChild(opt);
+                    });
+                } catch (err) {
+                    console.error('Error loading mandis:', err);
+                }
+            }
+        };
+
+        // Submit and show selected mandi rates
+        submitBtn.onclick = () => {
+            const selectedMandi = mandiSelect.value;
+            if (selectedMandi) {
+                loading.style.display = 'block';
+                fetchMandiRates(selectedMandi).finally(() => {
+                    loading.style.display = 'none';
+                    modal.style.display = 'none';
+                });
+            } else {
+                alert('Please select a mandi');
+            }
+        };
+    </script>

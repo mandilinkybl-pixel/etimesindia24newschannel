@@ -11,7 +11,13 @@ const razorpay = new Razorpay({
 
 // Render plan page
 exports.getPlanPage = async (req, res) => {
+   if(!req.user ||req.user==null)
+    {
+      console.log("❌ User not logged in, redirecting to login");
+      return  res.redirect('/login');
+    }
   try {
+   
     console.log("➡️ GET PLAN PAGE | planid =", req.params.planid);
     const plan = await SubscriptionPlan.findById(req.params.planid);
 
@@ -34,6 +40,11 @@ exports.getPlanPage = async (req, res) => {
 
 // Create Razorpay subscription
 exports.createSubscription = async (req, res) => {
+   if(!req.user ||req.user==null)
+    {
+      console.log("❌ User not logged in, redirecting to login");
+      return  res.redirect('/login');
+    }
   console.log("➡️ CREATE SUBSCRIPTION request body:", req.body);
 
   try {
@@ -66,6 +77,11 @@ exports.createSubscription = async (req, res) => {
 
 // Verify payment and save subscription
 exports.verifyAndSave = async (req, res) => {
+   if(!req.user ||req.user==null)
+    {
+      console.log("❌ User not logged in, redirecting to login");
+      return  res.redirect('/login');
+    }
   console.log("➡️ VERIFY PAYMENT & SAVE request body:", req.body);
 
   try {
@@ -120,6 +136,11 @@ exports.verifyAndSave = async (req, res) => {
 
 // Subscription history
 exports.subscriptionHistory = async (req, res) => {
+   if(!req.user ||req.user==null)
+    {
+      console.log("❌ User not logged in, redirecting to login");
+      return  res.redirect('/login');
+    }
   try {
     console.log("➡️ VIEW SUBSCRIPTION HISTORY for user:", req.user._id);
 

@@ -1,191 +1,148 @@
 // app/controllers/ui/videoEngagement.js
-
 const MainLive = require("../../models/main_video");
 
-// Get client IP with localhost normalization
+// Best real IP detection (works behind Nginx/Cloudflare too)
 const getClientIp = (req) => {
-  let ip =
-    req.ip ||
+  return (
+    req.headers["x-real-ip"] ||
     req.headers["x-forwarded-for"]?.split(",")[0].trim() ||
+    req.ip ||
     req.connection?.remoteAddress ||
     req.socket?.remoteAddress ||
-    "unknown";
-
-  // Normalize all localhost variations to a single value for consistent testing
-  if (
-    ip === "::1" ||
-    ip === "127.0.0.1" ||
-    ip === "::ffff:127.0.0.1" ||
-    ip.startsWith("::ffff:127.") // Safety for other local variants
-  ) {
-    ip = "localhost";
-  }
-
-  return ip;
+    "unknown"
+  ).replace(/^::ffff:/, ""); // Clean IPv6 wrapper
 };
 
-// Detect device type
+// Accurate device detection
 const getDeviceType = (userAgent) => {
   if (!userAgent) return "unknown";
   const ua = userAgent.toLowerCase();
-
-  if (/tablet|ipad/i.test(ua)) return "tablet";
-  if (/mobile|android|iphone|ipod|windows phone/i.test(ua)) return "mobile";
+  if (/tablet|ipad|playbook|silk/i.test(ua)) return "tablet";
+  if (/mobile|iphone|ipod|android|blackberry|opera mini|iemobile/i.test(ua)) return "mobile";
   return "desktop";
 };
 
-// Helper to update device count array
-const updateDeviceCount = (deviceArray, device, increment = 1) => {
-  let stat = deviceArray.find((d) => d.device === device);
-  if (stat) {
-    stat.count += increment;
-    if (stat.count < 0) stat.count = 0; // Safety
+const updateDeviceCount = (array, device, inc = 1) => {
+  let entry = array.find(d => d.device === device);
+  if (entry) {
+    entry.count += inc;
+    if (entry.count < 0) entry.count = 0;
   } else {
-    deviceArray.push({ device, count: Math.max(1, increment) });
+    array.push({ device, count: Math.max(1, inc) });
   }
 };
 
-// 1. Track View - Unique per IP forever
+// Track View - 1 per IP + Device
 exports.trackView = async (req, res) => {
   try {
     const { id } = req.params;
-    if (!id) return res.status(400).json({ success: false, message: "ID required" });
-
     const ip = getClientIp(req);
-    const userAgent = req.get("User-Agent") || "";
-    const device = getDeviceType(userAgent);
+    const device = getDeviceType(req.get("User-Agent"));
 
     const video = await MainLive.findById(id);
-    if (!video) return res.status(404).json({ success: false, message: "Video not found" });
+    if (!video) return res.status(404).json({ success: false });
 
-    // Initialize arrays if missing
-    if (!Array.isArray(video.viewedBy)) video.viewedBy = [];
-    if (!Array.isArray(video.deviceViews)) video.deviceViews = [];
+    if (!video.viewedBy) video.viewedBy = [];
+    if (!video.deviceViews) video.deviceViews = [];
 
-    // Check if this IP already viewed
-    const alreadyViewed = video.viewedBy.some((entry) => entry.ip === ip);
+    const alreadyViewed = video.viewedBy.some(v => v.ip === ip && v.device === device);
+
     let isNewView = false;
-
     if (!alreadyViewed) {
       video.viewedBy.push({ ip, device });
       video.views += 1;
       isNewView = true;
-
       updateDeviceCount(video.deviceViews, device, 1);
       await video.save();
     }
 
-    res.json({
-      success: true,
-      views: video.views,
-      isNewView, // Useful for frontend animation
-      deviceBreakdown: video.deviceViews,
-    });
+    res.json({ success: true, views: video.views, isNewView, deviceBreakdown: video.deviceViews });
   } catch (err) {
-    console.error("Track View Error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error(err);
+    res.status(500).json({ success: false });
   }
 };
 
-// 2. Toggle Like - Unique per IP
+// Toggle Like - 1 per IP + Device
 exports.toggleLike = async (req, res) => {
   try {
     const { id } = req.params;
     const ip = getClientIp(req);
-    const userAgent = req.get("User-Agent") || "";
-    const device = getDeviceType(userAgent);
+    const device = getDeviceType(req.get("User-Agent"));
 
     const video = await MainLive.findById(id);
-    if (!video) return res.status(404).json({ success: false, message: "Video not found" });
+    if (!video) return res.status(404).json({ success: false });
 
-    if (!Array.isArray(video.likedBy)) video.likedBy = [];
-    if (!Array.isArray(video.deviceLikes)) video.deviceLikes = [];
+    if (!video.likedBy) video.likedBy = [];
+    if (!video.deviceLikes) video.deviceLikes = [];
 
-    const likeIndex = video.likedBy.findIndex((entry) => entry.ip === ip);
-    let nowLiked;
+    const index = video.likedBy.findIndex(l => l.ip === ip && l.device === device);
+    let hasLiked;
 
-    if (likeIndex !== -1) {
+    if (index > -1) {
       // Unlike
-      const removedDevice = video.likedBy[likeIndex].device;
-      video.likedBy.splice(likeIndex, 1);
+      updateDeviceCount(video.deviceLikes, video.likedBy[index].device, -1);
+      video.likedBy.splice(index, 1);
       video.likes -= 1;
-      updateDeviceCount(video.deviceLikes, removedDevice, -1);
-      nowLiked = false;
+      hasLiked = false;
     } else {
       // Like
       video.likedBy.push({ ip, device });
       video.likes += 1;
       updateDeviceCount(video.deviceLikes, device, 1);
-      nowLiked = true;
+      hasLiked = true;
     }
 
     await video.save();
 
-    res.json({
-      success: true,
-      likes: video.likes,
-      hasLiked: nowLiked,
-    });
+    res.json({ success: true, likes: video.likes, hasLiked });
   } catch (err) {
-    console.error("Toggle Like Error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error(err);
+    res.status(500).json({ success: false });
   }
 };
 
-// 3. Add Comment - Anonymous, multiple allowed per IP
+// Add Comment
 exports.addComment = async (req, res) => {
   try {
     const { id } = req.params;
     const { message } = req.body;
-
-    if (!message || message.trim().length === 0 || message.length > 300) {
-      return res.status(400).json({ success: false, message: "Message is required and max 300 chars" });
-    }
+    if (!message || message.trim().length > 300) return res.status(400).json({ success: false });
 
     const ip = getClientIp(req);
-    const userAgent = req.get("User-Agent") || "";
-    const device = getDeviceType(userAgent);
+    const device = getDeviceType(req.get("User-Agent"));
 
     const video = await MainLive.findById(id);
-    if (!video) return res.status(404).json({ success: false, message: "Video not found" });
+    if (!video) return res.status(404).json({ success: false });
 
-    if (!Array.isArray(video.comments)) video.comments = [];
-    if (!Array.isArray(video.deviceComments)) video.deviceComments = [];
+    if (!video.comments) video.comments = [];
+    if (!video.deviceComments) video.deviceComments = [];
 
     video.comments.push({
       name: "Anonymous",
       message: message.trim(),
       ip,
-      device,
+      device
     });
 
     updateDeviceCount(video.deviceComments, device, 1);
-
     await video.save();
 
     const recentComments = video.comments.slice(-10).reverse();
 
-    res.json({
-      success: true,
-      commentsCount: video.comments.length,
-      recentComments,
-    });
+    res.json({ success: true, commentsCount: video.comments.length, recentComments });
   } catch (err) {
-    console.error("Add Comment Error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error(err);
+    res.status(500).json({ success: false });
   }
 };
 
-// 4. Get Stats - For live updates in frontend
+// Get Stats
 exports.getStats = async (req, res) => {
   try {
     const { id } = req.params;
-
-    const video = await MainLive.findById(id).select(
-      "views likes comments deviceViews deviceLikes deviceComments"
-    );
-
-    if (!video) return res.status(404).json({ success: false, message: "Not found" });
+    const video = await MainLive.findById(id).select("views likes comments deviceViews deviceLikes deviceComments");
+    if (!video) return res.status(404).json({ success: false });
 
     const recentComments = video.comments.slice(-20).reverse();
 
@@ -196,10 +153,10 @@ exports.getStats = async (req, res) => {
       recentComments,
       deviceViews: video.deviceViews || [],
       deviceLikes: video.deviceLikes || [],
-      deviceComments: video.deviceComments || [],
+      deviceComments: video.deviceComments || []
     });
   } catch (err) {
-    console.error("Get Stats Error:", err);
-    res.status(500).json({ success: false, message: "Server error" });
+    console.error(err);
+    res.status(500).json({ success: false });
   }
 };

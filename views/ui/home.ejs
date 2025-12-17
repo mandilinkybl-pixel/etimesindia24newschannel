@@ -798,7 +798,7 @@ width:auto;
       </aside>
 
       <main>
-       <div
+<div
   style="
     position: relative;
     margin-top: 0px;
@@ -827,8 +827,7 @@ width:auto;
       color: #a00000;
     "
   >
-    <img src="./logo/tag.png" alt="" height="30px">
-
+    <img src="./logo/tag.png" alt="Logo" height="30px">
     <div
       id="typingText"
       style="
@@ -836,8 +835,9 @@ width:auto;
         font-weight: bold;
         white-space: nowrap;
         overflow: hidden;
-        border-right: 3px solid #31010105;
+        border-right: 3px solid #a00000;
         color: #a00000;
+        min-width: 200px;
       "
     >
       Loading...
@@ -845,21 +845,13 @@ width:auto;
     <div></div>
   </div>
 
-  <!-- VIDEO -->
+  <!-- VIDEO PLAYER -->
   <div style="position: relative; width: 100%; height: 0; padding-bottom: 56.25%; margin-top: 40px; border-radius: 5px; overflow: hidden;">
     <% if (livevideo && livevideo.videoUrl) { %>
       <% if (livevideo.videoUrl.includes('youtube.com') || livevideo.videoUrl.includes('youtu.be')) { %>
         <iframe
           src="<%= livevideo.videoUrl %>"
-          style="
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: none;
-            border-radius: 5px;
-          "
+          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: none; border-radius: 5px;"
           allowfullscreen
           allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
           loading="lazy"
@@ -868,22 +860,12 @@ width:auto;
         <video
           controls
           poster="<%= livevideo.poster || 'https://i.imgur.com/0z8K8pP.jpg' %>"
-          style="
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border-radius: 5px;
-          "
+          style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 5px;"
           autoplay
           muted
           loop
         >
-          <source
-            src="<%= livevideo.videoUrl %>"
-            type="video/mp4"
-          />
+          <source src="<%= livevideo.videoUrl %>" type="video/mp4" />
           Your browser does not support the video tag.
         </video>
       <% } %>
@@ -891,52 +873,38 @@ width:auto;
       <video
         controls
         poster="https://i.imgur.com/0z8K8pP.jpg"
-        style="
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 100%;
-          border-radius: 5px;
-        "
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 5px;"
       >
-        <source
-          src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-          type="video/mp4"
-        />
+        <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4" type="video/mp4" />
       </video>
     <% } %>
   </div>
 
-  <!-- LIVE TIME (BOTTOM RIGHT) -->
+  <!-- LIVE TIME (Top Right) -->
   <div
     id="timeBox"
-    class="time"
     style="
       position: absolute;
       top: 3px;
       right: 1px;
       font-size: 11px;
       background: rgb(255, 255, 255);
-      padding: 0px ;
-
+      padding: 4px 8px;
       border-radius: 4px;
-      color: #8b0000fd;
+      color: #8b0000;
       z-index: 20;
       font-weight: bold;
       display: flex;
       align-items: center;
       flex-direction: column;
+      box-shadow: 0 0 5px rgba(0,0,0,0.2);
     "
   >
-    <img
-      src="/logo/logo.png"
-      style="width: 60px; height: auto;"
-    />
-    <span id="currentTime" style="padding-right: 10px; "></span>
+    <img src="/logo/logo.png" style="width: 60px; height: auto;" alt="Channel Logo" />
+    <span id="currentTime" style="margin-top: 4px;"></span>
   </div>
 
-  <!-- MARQUEE -->
+  <!-- SCROLLING MARQUEE (Bottom) -->
   <div
     style="
       background: #a00000;
@@ -950,6 +918,7 @@ width:auto;
       overflow: hidden;
       color: #fff;
       z-index: 20;
+      box-shadow: 0 -2px 10px rgba(0,0,0,0.3);
     "
   >
     <span
@@ -960,79 +929,88 @@ width:auto;
         color: #fff;
         position: relative;
         left: 100%;
+        padding-left: 100%;
       "
     >
       Loading...
     </span>
   </div>
-
-  
 </div>
 
 <script>
-  // Dynamic data from EJS
-  const titleText = "<%= livevideo ? (livevideo.title || 'Election Results Live...') : 'Election Results Live...' %>";
-  const marqueeText = "<%= livevideo ? (livevideo.marqueeText || 'E TIMES INDIA LIVE — Bihar Polls | Lalu Feud | J&K Blast | Breaking Headlines | Top National News...') : 'E TIMES INDIA LIVE — Bihar Polls | Lalu Feud | J&K Blast | Breaking Headlines | Top National News...' %>";
-
-  // Update texts
-  document.getElementById("typingText").textContent = titleText;
-  document.getElementById("marqueeText").textContent = marqueeText;
-
-  function updateTime() {
-    const now = new Date();
+  try {
+    // SAFELY GET DATA FROM SERVER - FULL TEXT, NO LIMIT
+    const titleText = <%- JSON.stringify(livevideo ? (livevideo.title || 'Election Results Live...') : 'Election Results Live...') %>;
     
-    // 24-hour format with leading zeros
-    const time24 = now.toLocaleTimeString('en-GB', {
+    const rawMarqueeText = <%- JSON.stringify(livevideo ? (livevideo.marqueeText || 'E TIMES INDIA LIVE — Breaking News | National Updates') : 'E TIMES INDIA LIVE — Breaking News | National Updates') %>;
+
+    // Clean only line breaks → keep EVERY word
+    const marqueeText = rawMarqueeText
+      .replace(/\r\n|\n/g, ' | ')
+      .replace(/\s+/g, ' ')
+      .trim();
+
+    // UPDATE TITLE AND MARQUEE IMMEDIATELY
+    const typingEl = document.getElementById('typingText');
+    const marqueeEl = document.getElementById('marqueeText');
+
+    if (typingEl) typingEl.innerText = titleText;
+    if (marqueeEl) marqueeEl.innerText = marqueeText || 'Breaking News Live...';
+
+    // LIVE CLOCK
+    function updateTime() {
+      const now = new Date();
+      const timeStr = now.toLocaleTimeString('en-GB', {
         hour: '2-digit',
         minute: '2-digit',
         second: '2-digit',
-        hour12: false   // This removes AM/PM
-    });
+        hour12: false
+      });
+      const timeEl = document.getElementById('currentTime');
+      if (timeEl) timeEl.innerText = timeStr;
+    }
+    setInterval(updateTime, 1000);
+    updateTime();
 
-    document.getElementById("currentTime").innerText = time24;
-  }
+    // SLOW MARQUEE SCROLL - FULL TEXT VISIBLE
+    if (marqueeEl) {
+      let pos = 100;
+      function scrollMarquee() {
+        pos -= 0.25;  // VERY SLOW SPEED (0.25 = slow, readable | change to 0.15 for even slower)
+        marqueeEl.style.left = pos + '%';
 
-  // Update time every second
-  setInterval(updateTime, 1000);
-  updateTime();
+        // Smart reset: only when full text has passed
+        const resetPoint = -100 - (marqueeEl.offsetWidth / marqueeEl.parentElement.offsetWidth * 100);
+        if (pos < resetPoint) {
+          pos = 100;
+        }
 
-  /* FIXED MARQUEE */
-  let marquee = document.getElementById("marqueeText");
-  let pos = 100;
-
-  function scrollMarquee() {
-    pos -= 0.1; // speed
-    marquee.style.left = pos + "%";
-
-    if (pos < -100) {
-      pos = 100; // reset
+        requestAnimationFrame(scrollMarquee);
+      }
+      scrollMarquee();
     }
 
-    requestAnimationFrame(scrollMarquee);
-  }
-  scrollMarquee();
-
-  /* TYPING ANIMATION */
-  let text = titleText;
-  let typingDiv = document.getElementById("typingText");
-  let index = 0;
-  let forward = true;
-
-  function typingAnimation() {
-    typingDiv.textContent = text.substring(0, index);
-
-    if (forward) {
-      index++;
-      if (index > text.length) forward = false;
-    } else {
-      index--;
-      if (index < 0) forward = true;
+    // TITLE TYPING ANIMATION (repeats smoothly)
+    if (titleText && titleText.trim().length > 0 && typingEl) {
+      let index = 0;
+      function type() {
+        typingEl.innerText = titleText.substring(0, index);
+        index++;
+        if (index <= titleText.length) {
+          setTimeout(type, 100);
+        } else {
+          setTimeout(() => {
+            index = 0;
+            type();
+          }, 3000); // Pause 3 seconds before retyping
+        }
+      }
+      setTimeout(type, 600);
     }
 
-    setTimeout(typingAnimation, 120);
+  } catch (error) {
+    console.error("Error in script:", error);
   }
-
-  typingAnimation();
 </script>
 <!-- ADD THIS BAR AFTER THE MARQUEE DIV (inside the main container) -->
 <!-- ENGAGEMENT BAR: Views | Like (Facebook-Style SVG Thumbs-Up) | Comment Icon | Share Button -->

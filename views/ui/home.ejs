@@ -1037,26 +1037,24 @@ width:auto;
 <!-- ADD THIS BAR AFTER THE MARQUEE DIV (inside the main container) -->
 
 <!-- ENGAGEMENT BAR: Views | Like (Heart) | Comment Icon | Share Button -->
-<div
-  style="
+<!-- ENGAGEMENT BAR: Views | Like (Heart) | Comment Icon | Share Button -->
+<div style="
   border-radius: 20px;
-    background: #ffffff;
-    padding: 4px 5px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-top: 3px solid #a00000;
-    font-family: Arial, sans-serif;
-    box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
-  "
->
+  background: #ffffff;
+  padding: 4px 5px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-top: 3px solid #a00000;
+  font-family: Arial, sans-serif;
+  box-shadow: 0 -4px 10px rgba(0,0,0,0.1);
+">
   <!-- Views + Likes -->
   <div style="display: flex; align-items: center; gap: 20px;">
     <div style="display: flex; align-items: center; gap: 6px; color: #555; font-size: 15px;">
       <span><i class="fa-regular fa-eye" style="font-size: 16px;"></i></span>
       <span id="viewCount"><%= livevideo.views || 0 %></span> Views
     </div>
-
     <div style="display: flex; align-items: center; gap: 6px; cursor: pointer;" onclick="toggleLike()">
       <span id="likeIcon" style="font-size: 16px; transition: all 0.3s;">
         <%= hasLiked ? '❤️' : '🤍' %>
@@ -1066,30 +1064,28 @@ width:auto;
       </span>
     </div>
   </div>
-
   <!-- Comment & Share Icons -->
   <div style="display: flex; align-items: center; gap: 18px;">
     <div style="cursor: pointer;" onclick="openCommentPopup()">
       <span style="font-size: 18px;"><i class="fa-regular fa-message"></i></span>
-      <span style="color: #555; font-size: 14px;"><%= livevideo.comments ? livevideo.comments.length : 0 %></span>
+      <span id="commentCountDisplay" style="color: #555; font-size: 14px;">
+        <%= livevideo.comments ? livevideo.comments.length : 0 %>
+      </span>
     </div>
-
-     <button 
-      onclick="shareVideo()"
-      style="
-        background:#a00000;
-        color:white;
-        padding:8px 18px;
-        border:none;
-        border-radius:50px;
-        font-weight:bold;
-        cursor:pointer;
-        display: flex;
-        align-items: center;
-        gap: 6px;
-        font-size: 1rem;
-        box-shadow:0 4px 10px rgba(160,0,0,0.3);
-      ">
+    <button onclick="shareVideo()" style="
+      background:#a00000;
+      color:white;
+      padding:8px 18px;
+      border:none;
+      border-radius:50px;
+      font-weight:bold;
+      cursor:pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 1rem;
+      box-shadow:0 4px 10px rgba(160,0,0,0.3);
+    ">
       📤 Share
     </button>
   </div>
@@ -1118,13 +1114,12 @@ width:auto;
       💬 Comments (<span id="modalCommentCount"><%= livevideo.comments ? livevideo.comments.length : 0 %></span>)
       <span onclick="closeCommentPopup()" style="position: absolute; right: 15px; top: 12px; font-size: 24px; cursor: pointer;">×</span>
     </div>
-
     <!-- Comments List -->
     <div id="commentsList" style="max-height: 400px; overflow-y: auto; padding: 15px;">
       <% if (livevideo.comments && livevideo.comments.length > 0) { %>
         <% livevideo.comments.slice().reverse().forEach(comment => { %>
           <div style="margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;">
-            <strong style="color: #a00000;"><%= comment.name %></strong>
+            <strong style="color: #a00000;"><%= comment.name || 'Anonymous' %></strong>
             <p style="margin: 5px 0; color: #333;"><%= comment.message %></p>
             <small style="color: #888;"><%= new Date(comment.createdAt).toLocaleString() %></small>
           </div>
@@ -1133,12 +1128,27 @@ width:auto;
         <p style="text-align: center; color: #999;">No comments yet. Be the first!</p>
       <% } %>
     </div>
-
     <!-- Add Comment Form -->
     <div style="padding: 15px; border-top: 1px solid #ddd;">
-      <input type="text" id="commentName" placeholder="Your Name" style="width: 100%; padding: 10px; margin-bottom: 8px; border: 1px solid #ccc; border-radius: 8px;" maxlength="50">
-      <textarea id="commentMessage" placeholder="Write a comment..." style="width: 100%; padding: 10px; height: 80px; border: 1px solid #ccc; border-radius: 8px; resize: none;" maxlength="300"></textarea>
-      <button onclick="submitComment()" style="margin-top: 10px; background: #a00000; color: white; padding: 10px 20px; border: none; border-radius: 50px; font-weight: bold; cursor: pointer; width: 100%;">
+      <textarea id="commentMessage" placeholder="Write a comment as Anonymous..." style="
+        width: 100%; 
+        padding: 10px; 
+        height: 80px; 
+        border: 1px solid #ccc; 
+        border-radius: 8px; 
+        resize: none;
+      " maxlength="300"></textarea>
+      <button onclick="submitComment()" style="
+        margin-top: 10px; 
+        background: #a00000; 
+        color: white; 
+        padding: 10px 20px; 
+        border: none; 
+        border-radius: 50px; 
+        font-weight: bold; 
+        cursor: pointer; 
+        width: 100%;
+      ">
         Post Comment
       </button>
     </div>
@@ -1148,169 +1158,137 @@ width:auto;
 <script>
 // Video ID from EJS
 const videoId = "<%= livevideo._id %>";
-let likeStatus = <%= hasLiked ? 'true' : 'false' %>; // Pass from controller
+let hasLiked = <%= hasLiked ? 'true' : 'false' %>;
+const videoHeadline = "<%= livevideo.title || 'Live Video' %>";
+const videoLink = window.location.href;
 
-// const videoId = "<%= livevideo._id %>";
-const videoHeadline = "<%= livevideo.headline || 'Watch this live video now!' %>";
-const videoLink = `${window.location.origin}`;
+// Track view on page load (only once per user due to backend IP check)
+async function trackView() {
+  try {
+    const res = await fetch(`/api/video/${videoId}/view`, { method: "POST" });
+    const data = await res.json();
+    if (data.success && data.isNewView) {
+      document.getElementById("viewCount").textContent = data.views;
+    }
+  } catch (err) {
+    console.log("View tracking failed (possibly blocked or offline):", err);
+  }
+}
 
-/**
- * Share Video with Web Share API or Copy Link Fallback
- */
+// Share Video
 function shareVideo() {
-  const shareText = `${videoHeadline}\n\nWatch here: ${videoLink}`;
+  const shareText = `${videoHeadline}\n\nWatch now: ${videoLink}`;
   if (navigator.share) {
-    // Use Web Share API if supported
-    navigator
-      .share({
-        title: videoHeadline,
-        text: shareText,
-        url: videoLink,
-      })
-      .then(() => console.log("Share successful"))
-      .catch((err) => console.log("Sharing failed:", err));
+    navigator.share({
+      title: videoHeadline,
+      text: "Check out this live video!",
+      url: videoLink
+    }).catch(console.error);
   } else {
-    // Fallback to Clipboard Copy
-    navigator.clipboard
-      .writeText(shareText)
-      .then(() => alert("Link copied to clipboard!"))
-      .catch((err) => alert("Failed to copy link."));
+    navigator.clipboard.writeText(videoLink).then(() => {
+      alert("Link copied to clipboard!");
+    }).catch(() => {
+      prompt("Copy this link:", videoLink);
+    });
   }
 }
-// Toggle Like (Instagram-style: red heart when liked)
+
+// Toggle Like
 async function toggleLike() {
-  const response = await fetch(`/api/video/${videoId}/like`, { method: "POST" });
-  const data = await response.json();
-
-  if (data.success) {
-    document.getElementById("likeCount").textContent = data.likes;
-    document.getElementById("likeIcon").textContent = data.hasLiked ? "❤️" : "🤍";
-    document.getElementById("likeCount").style.color = data.hasLiked ? "#a00000" : "#555";
-    likeStatus = data.hasLiked;
+  try {
+    const res = await fetch(`/api/video/${videoId}/like`, { method: "POST" });
+    const data = await res.json();
+    if (data.success) {
+      document.getElementById("likeCount").textContent = data.likes;
+      document.getElementById("likeIcon").textContent = data.hasLiked ? "❤️" : "🤍";
+      document.getElementById("likeCount").style.color = data.hasLiked ? "#a00000" : "#555";
+      hasLiked = data.hasLiked;
+    }
+  } catch (err) {
+    alert("Like failed. Check connection.");
   }
 }
 
-// Open/Close Comment Popup
+// Open/Close Modal
 function openCommentPopup() {
   document.getElementById("commentModal").style.display = "flex";
-  // Optional: refresh comments
-  loadComments();
+  loadComments(); // Refresh on open
 }
 
 function closeCommentPopup() {
   document.getElementById("commentModal").style.display = "none";
 }
 
-// Submit Comment
+// Submit Comment (Anonymous only)
 async function submitComment() {
-  const name = document.getElementById("commentName").value.trim();
   const message = document.getElementById("commentMessage").value.trim();
-
-  if (!name || !message) {
-    alert("Name and message required!");
+  if (!message) {
+    alert("Please write a message!");
+    return;
+  }
+  if (message.length > 300) {
+    alert("Message too long! Max 300 characters.");
     return;
   }
 
-  const res = await fetch(`/api/video/${videoId}/comment`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ name, message })
-  });
-
-  const data = await res.json();
-  if (data.success) {
-    alert("Comment posted!");
-    document.getElementById("commentName").value = "";
-    document.getElementById("commentMessage").value = "";
-    document.getElementById("modalCommentCount").textContent = data.commentsCount;
-    loadComments(); // Refresh list
-  }
-}
-
-// Load latest comments (optional refresh)
-async function loadComments() {
-  const res = await fetch(`/api/video/${videoId}/stats`);
-  const data = await res.json();
-
-  const list = document.getElementById("commentsList");
-  list.innerHTML = "";
-
-  if (data.recentComments && data.recentComments.length > 0) {
-    data.recentComments.forEach(comment => {
-      const div = document.createElement("div");
-      div.style = "margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;";
-      div.innerHTML = `
-        <strong style="color: #a00000;">${comment.name}</strong>
-        <p style="margin: 5px 0; color: #333;">${comment.message}</p>
-        <small style="color: #888;">${new Date(comment.createdAt).toLocaleString()}</small>
-      `;
-      list.appendChild(div);
-    });
-  } else {
-    list.innerHTML = '<p style="text-align: center; color: #999;">No comments yet.</p>';
-  }
-}
-</script>
-
-<script>
-async function generateAndShare() {
-  const btn = document.getElementById("generateBtn");
-  const statusDiv = document.getElementById("status");
-
-  // Reset & show loading
-  btn.disabled = true;
-  btn.style.opacity = "0.7";
-  statusDiv.innerHTML = `
-    <div style="color:#ff9800; font-weight:bold; font-size:18px;">
-      Generating your branded video...<br>
-      <small>Please wait 10–40 seconds</small>
-    </div>
-  `;
-
   try {
-    const videoId = "<%= livevideo._id %>"; // Make sure this exists in your EJS template
-    const response = await fetch(`/generate/${videoId}`, { method: "GET" });
+    const res = await fetch(`/api/video/${videoId}/comment`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ message }) // Only message, name is "Anonymous" on backend
+    });
+    const data = await res.json();
 
-    if (response.ok) {
-      // Success → replace entire page with the beautiful share page
-      const html = await response.text();
-      document.open();
-      document.write(html);
-      document.close();
+    if (data.success) {
+      document.getElementById("commentMessage").value = "";
+      document.getElementById("modalCommentCount").textContent = data.commentsCount;
+      document.getElementById("commentCountDisplay").textContent = data.commentsCount;
+      loadComments();
     } else {
-      // FAILED → Show "Try Again" button
-      throw new Error(await response.text());
+      alert("Failed to post comment.");
     }
   } catch (err) {
-    console.error(err);
-
-    statusDiv.innerHTML = `
-      <div style="color:#ff0000; font-weight:bold; padding:15px; background:rgba(255,0,0,0.15); border-radius:8px; border:1px solid #ff4444;">
-        Generation Failed!<br>
-        <small>Server busy or video issue</small>
-      </div>
-      <button onclick="generateAndShare()" 
-        style="
-          margin-top:15px;
-          background:#ff0000;
-          color:white;
-          padding:12px 30px;
-          border:none;
-          border-radius:50px;
-          font-weight:bold;
-          cursor:pointer;
-          box-shadow:0 4px 15px rgba(255,0,0,0.4);
-        ">
-        Try Again
-      </button>
-    `;
-
-    // Re-enable main button
-    btn.disabled = false;
-    btn.style.opacity = "1";
-    btn.textContent = "Generate & Share Branded Video";
+    alert("Network error. Try again.");
   }
 }
+
+// Load and display latest comments
+async function loadComments() {
+  try {
+    const res = await fetch(`/api/video/${videoId}/stats`);
+    const data = await res.json();
+
+    const list = document.getElementById("commentsList");
+    list.innerHTML = "";
+
+    if (data.recentComments && data.recentComments.length > 0) {
+      data.recentComments.forEach(comment => {
+        const div = document.createElement("div");
+        div.style = "margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #eee;";
+        div.innerHTML = `
+          <strong style="color: #a00000;">${comment.name || 'Anonymous'}</strong>
+          <p style="margin: 5px 0; color: #333;">${comment.message}</p>
+          <small style="color: #888;">${new Date(comment.createdAt).toLocaleString()}</small>
+        `;
+        list.appendChild(div);
+      });
+    } else {
+      list.innerHTML = '<p style="text-align: center; color: #999;">No comments yet. Be the first!</p>';
+    }
+
+    // Update counts in header and bar
+    document.getElementById("modalCommentCount").textContent = data.commentsCount;
+    document.getElementById("commentCountDisplay").textContent = data.commentsCount;
+
+  } catch (err) {
+    console.error("Failed to load comments:", err);
+  }
+}
+
+// === AUTO EXECUTE ON PAGE LOAD ===
+window.addEventListener("load", () => {
+  trackView(); // This will count the view if it's a new unique IP
+});
 </script>
 
 

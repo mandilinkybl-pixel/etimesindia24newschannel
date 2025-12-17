@@ -3,8 +3,14 @@ const mongoose = require("mongoose");
 
 const CommentSchema = new mongoose.Schema(
   {
-    name: { type: String, required: true, trim: true, maxlength: 50 },
+    name: { type: String, trim: true, maxlength: 50 },
     message: { type: String, required: true, trim: true, maxlength: 300 },
+    ip: { type: String, required: true },
+    device: {
+      type: String,
+      enum: ["mobile", "tablet", "desktop", "unknown"],
+      required: true,
+    },
     createdAt: { type: Date, default: Date.now }
   },
   { timestamps: true }
@@ -50,14 +56,21 @@ const MainLiveSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    viewedBy: [
+      {
+        ip: { type: String },
+        device: { type: String, enum: ["mobile", "tablet", "desktop", "unknown"] },
+      },
+    ],
     likedBy: [
       {
-        type: String, // IP addresses
+        ip: { type: String },
+        device: { type: String, enum: ["mobile", "tablet", "desktop", "unknown"] },
       },
     ],
     comments: [CommentSchema],
 
-    // Device-wise views - FIXED with default empty array
+    // Device-wise breakdowns
     deviceViews: {
       type: [
         {
@@ -72,7 +85,39 @@ const MainLiveSchema = new mongoose.Schema(
           },
         },
       ],
-      default: [], // ← THIS PREVENTS THE ERROR FOREVER
+      default: [],
+    },
+    deviceLikes: {
+      type: [
+        {
+          device: {
+            type: String,
+            enum: ["mobile", "tablet", "desktop", "unknown"],
+            required: true,
+          },
+          count: {
+            type: Number,
+            default: 0,
+          },
+        },
+      ],
+      default: [],
+    },
+    deviceComments: {
+      type: [
+        {
+          device: {
+            type: String,
+            enum: ["mobile", "tablet", "desktop", "unknown"],
+            required: true,
+          },
+          count: {
+            type: Number,
+            default: 0,
+          },
+        },
+      ],
+      default: [],
     },
   },
   { timestamps: true }

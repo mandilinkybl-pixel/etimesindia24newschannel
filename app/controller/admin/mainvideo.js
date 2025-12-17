@@ -8,7 +8,7 @@ const path = require('path');
 // GET: Show edit/create form (only one record - handles both display for update/create)
 exports.getAdminLive = async (req, res) => {
   try {
-    const live = await MainLive.findOne().sort({ createdAt: -1 });
+    const live = await MainLive.findOne();
     res.render("admin/live-edit", { 
       live, 
       pageTitle: "Edit Main Live Video",
@@ -41,13 +41,23 @@ exports.postAdminLive = async (req, res) => {
     let live = await MainLive.findOne().sort({ createdAt: -1 });
 
     if (live) {
-      // UPDATE EXISTING
+      // UPDATE EXISTING - Reset engagement data on update
       live.title = title;
       live.marqueeText = marqueeText;
       live.videoUrl = finalVideoUrl || live.videoUrl; // Keep existing if no new video
       live.poster = finalPosterUrl || live.poster; // Keep existing if no new poster
       live.isActive = isActive === "on";
       live.expiresAt = expiresAt ? new Date(expiresAt) : null;
+
+      // Reset engagement data
+      live.views = 0;
+      live.likes = 0;
+      live.viewedBy = [];
+      live.likedBy = [];
+      live.comments = [];
+      live.deviceViews = [];
+      live.deviceLikes = [];
+      live.deviceComments = [];
     } else {
       // CREATE NEW (first time)
       if (!finalVideoUrl) {

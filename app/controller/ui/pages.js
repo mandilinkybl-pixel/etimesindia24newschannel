@@ -138,7 +138,7 @@ class Uipagescontroller {
 home = async (req, res) => {
   try {
     // ----- LIVE VIDEO (Latest Active One) -----
-    const livevideo = await MainLive.findOne({ isActive: true }).sort({ createdAt: -1 }).lean()
+    const livevideo = await MainLive.findOne()
 
     let hasLiked = false
     if (livevideo) {

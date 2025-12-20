@@ -183,16 +183,21 @@ exports.deleteNews = async (req, res) => {
 
 const ffmpeg = require("fluent-ffmpeg");
 const { createCanvas, loadImage } = require("canvas");
-
-// Best 2025 production setup: ffmpeg-static (downloads static binaries automatically)
 const ffmpegStatic = require("ffmpeg-static");
+const ffprobeStatic = require("ffprobe-static");
+const os = require("os");
 
-ffmpeg.setFfmpegPath(ffmpegStatic);  // Path to ffmpeg binary
-ffmpeg.setFfprobePath(ffmpegStatic.replace("ffmpeg", "ffprobe"));  // ffprobe in same dir
+if (os.platform() === "win32") {
+  // Windows
+  ffmpeg.setFfmpegPath(ffmpegStatic);
+  ffmpeg.setFfprobePath(ffprobeStatic.path);
+} else {
+  // Linux (Hostinger)
+  ffmpeg.setFfmpegPath("/snap/bin/ffmpeg");
+  ffmpeg.setFfprobePath("/snap/bin/ffprobe");
+}
 
-// Optional: Log paths for debugging (remove in production)
-// console.log("FFmpeg path:", ffmpeg.getFfmpegPath());
-// console.log("FFprobe path:", ffmpeg.getFfprobePath());
+
 exports.downloadVideoWithOverlay = async (req, res) => {
   try {
     const news = await environment.findById(req.params.id);

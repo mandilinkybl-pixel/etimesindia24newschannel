@@ -3,12 +3,19 @@ const fs = require("fs");
 const path = require("path");
 const ffmpeg = require("fluent-ffmpeg");
 const { createCanvas, loadImage } = require("canvas");
-
-// Best 2025 production setup: ffmpeg-static (downloads static binaries automatically)
 const ffmpegStatic = require("ffmpeg-static");
+const ffprobeStatic = require("ffprobe-static");
+const os = require("os");
 
-ffmpeg.setFfmpegPath(ffmpegStatic);  // Path to ffmpeg binary
-ffmpeg.setFfprobePath(ffmpegStatic.replace("ffmpeg", "ffprobe"));  // ffprobe in same dir
+if (os.platform() === "win32") {
+  // Windows
+  ffmpeg.setFfmpegPath(ffmpegStatic);
+  ffmpeg.setFfprobePath(ffprobeStatic.path);
+} else {
+  // Linux (Hostinger)
+  ffmpeg.setFfmpegPath("/snap/bin/ffmpeg");
+  ffmpeg.setFfprobePath("/snap/bin/ffprobe");
+}
 
 // POST - Create news
 exports.postCreateNews = async (req, res) => {

@@ -185,19 +185,12 @@ exports.deleteNews = async (req, res) => {
 
 const ffmpeg = require("fluent-ffmpeg");
 const { createCanvas, loadImage } = require("canvas");
-const os = require("os");
 
-// Use ffmpeg-static for both ffmpeg and ffprobe (cross-platform support)
-// ffmpeg-static provides the path directly as a string
-// No separate ffprobe-static needed anymore (older approach)
-
+// Best 2025 production setup: ffmpeg-static (downloads static binaries automatically)
 const ffmpegStatic = require("ffmpeg-static");
 
-// Cross-platform: Works on Windows dev and Linux production
-// Also supports macOS if needed
-ffmpeg.setFfmpegPath(ffmpegStatic);
-ffmpeg.setFfprobePath(ffmpegStatic.replace("ffmpeg", "ffprobe"));
-
+ffmpeg.setFfmpegPath(ffmpegStatic);  // Path to ffmpeg binary
+ffmpeg.setFfprobePath(ffmpegStatic.replace("ffmpeg", "ffprobe"));  // ffprobe in same dir
 // Optional: Log paths for debugging (remove in production)
 // console.log("FFmpeg path:", ffmpeg.getFfmpegPath());
 // console.log("FFprobe path:", ffmpeg.getFfprobePath());

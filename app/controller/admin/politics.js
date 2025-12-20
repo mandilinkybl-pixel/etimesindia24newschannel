@@ -13,8 +13,8 @@ if (os.platform() === "win32") {
   ffmpeg.setFfprobePath(ffprobeStatic.path);
 } else {
   // Linux (Hostinger)
-  ffmpeg.setFfmpegPath("/snap/bin/ffmpeg");
-  ffmpeg.setFfprobePath("/snap/bin/ffprobe");
+ ffmpeg.setFfmpegPath("/usr/local/bin/ffmpeg");
+ffmpeg.setFfprobePath("/usr/local/bin/ffprobe");
 }
 // POST - Create news
 exports.postCreateNews = async (req, res) => {

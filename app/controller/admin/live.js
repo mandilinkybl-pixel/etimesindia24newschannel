@@ -189,14 +189,15 @@ const ffmpegStatic = require("ffmpeg-static");
 const ffprobeStatic = require("ffprobe-static");
 const os = require("os");
 
+
+
 if (os.platform() === "win32") {
-  // Windows
   ffmpeg.setFfmpegPath(ffmpegStatic);
   ffmpeg.setFfprobePath(ffprobeStatic.path);
 } else {
-  // Linux (Hostinger)
-  ffmpeg.setFfmpegPath("/snap/bin/ffmpeg");
-  ffmpeg.setFfprobePath("/snap/bin/ffprobe");
+  // Linux server (your case)
+ ffmpeg.setFfmpegPath("/usr/local/bin/ffmpeg");
+ffmpeg.setFfprobePath("/usr/local/bin/ffprobe");
 }
 
 exports.downloadVideoWithOverlay = async (req, res) => {

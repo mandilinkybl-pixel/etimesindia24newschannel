@@ -182,23 +182,20 @@ exports.deleteNews = async (req, res) => {
 };
 
 
-
 const ffmpeg = require("fluent-ffmpeg");
 const { createCanvas, loadImage } = require("canvas");
 const ffmpegStatic = require("ffmpeg-static");
 const ffprobeStatic = require("ffprobe-static");
 const os = require("os");
 
+
 if (os.platform() === "win32") {
-  // Windows
   ffmpeg.setFfmpegPath(ffmpegStatic);
   ffmpeg.setFfprobePath(ffprobeStatic.path);
 } else {
-  // Linux (Hostinger)
-  ffmpeg.setFfmpegPath("/snap/bin/ffmpeg");
-  ffmpeg.setFfprobePath("/snap/bin/ffprobe");
+ ffmpeg.setFfmpegPath("/usr/local/bin/ffmpeg");
+ffmpeg.setFfprobePath("/usr/local/bin/ffprobe");
 }
-
 
 exports.downloadVideoWithOverlay = async (req, res) => {
   try {

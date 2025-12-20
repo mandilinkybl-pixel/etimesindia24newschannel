@@ -20,12 +20,14 @@ if (os.platform() === "win32") {
 } else {
     // Linux / Hostinger Production
     // We use the absolute path we confirmed in your terminal via the 'find' command
-    const hostingerFFmpeg = "/var/www/etimes/etimesindia24newschannel/node_modules/ffmpeg-static/ffmpeg";
-    const hostingerFFprobe = "/var/www/etimes/etimesindia24newschannel/node_modules/ffprobe-static/ffprobe";
+  // Use these absolute paths verified by your terminal search
+const hostingerFFmpeg = "/var/www/etimes/etimesindia24newschannel/node_modules/ffmpeg-static/ffmpeg";
+const hostingerFFprobe = "/var/www/etimes/etimesindia24newschannel/node_modules/ffprobe-static/ffprobe";
 
-    // Fallback to ffmpeg-static package if the absolute path doesn't exist for some reason
-    ffmpegPath = fs.existsSync(hostingerFFmpeg) ? hostingerFFmpeg : ffmpegStatic;
-    ffprobePath = fs.existsSync(hostingerFFprobe) ? hostingerFFprobe : ffprobeStatic.path;
+ffmpeg.setFfmpegPath(hostingerFFmpeg);
+ffmpeg.setFfprobePath(hostingerFFprobe);
+
+console.log(`Active FFmpeg Path: ${hostingerFFmpeg}`);
 }
 
 ffmpeg.setFfmpegPath(ffmpegPath);

@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 const uipagescontroller = require('../../controller/ui/pages');
 const { protect } = require('../../middleware/auth');
-const {generateAndShareVideo} = require("../../controller/ui/generatedvideo")
+const {generateAndShareVideo} = require("../../controller/ui/genaratedvideo")
 // Correct order matters!
 router.get('/', protect,uipagescontroller.home);        // Home page
 router.get('/login', uipagescontroller.login);  // Login page

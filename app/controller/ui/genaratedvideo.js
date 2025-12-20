@@ -1,3 +1,4 @@
+
 // generateAndShareVideo.js → FULLY FIXED & UPDATED FOR DECEMBER 16, 2025
 // Route: GET /share/:id (or /generate/:id — rename if needed)
 // Adds: ffprobe path fix, dynamic headline from DB, engagement integration

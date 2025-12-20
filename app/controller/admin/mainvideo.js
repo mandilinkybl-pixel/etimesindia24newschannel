@@ -9,35 +9,31 @@ const ffprobeStatic = require("ffprobe-static");
 const os = require("os");
 const { createCanvas } = require("canvas");
 
-// 1. Get the paths from the static packages
-const localFFmpeg = ffmpegStatic;
-const localFFprobe = ffprobeStatic.path;
+// --- FIXED PATH LOGIC START ---
+let ffmpegPath;
+let ffprobePath;
 
-// 2. Set paths based on platform or availability
 if (os.platform() === "win32") {
-    ffmpeg.setFfmpegPath(localFFmpeg);
-    ffmpeg.setFfprobePath(localFFprobe);
+    // Windows Development
+    ffmpegPath = ffmpegStatic;
+    ffprobePath = ffprobeStatic.path;
 } else {
-    // Linux/Hostinger Logic
-    // We prioritize the static binary we installed via NPM because we know it's there
-    let ffmpegPath = localFFmpeg;
-    let ffprobePath = localFFprobe;
+    // Linux / Hostinger Production
+    // We use the absolute path we confirmed in your terminal via the 'find' command
+    const hostingerFFmpeg = "/var/www/etimes/etimesindia24newschannel/node_modules/ffmpeg-static/ffmpeg";
+    const hostingerFFprobe = "/var/www/etimes/etimesindia24newschannel/node_modules/ffprobe-static/ffprobe";
 
-    // Optional: Check if system ffmpeg exists, but usually localStatic is safer for Node apps
-    const systemPaths = ["/usr/bin/ffmpeg", "/usr/local/bin/ffmpeg", "/snap/bin/ffmpeg"];
-    for (const p of systemPaths) {
-        if (fs.existsSync(p)) {
-            ffmpegPath = p;
-            break;
-        }
-    }
-
-    ffmpeg.setFfmpegPath(ffmpegPath);
-    ffmpeg.setFfprobePath(ffprobePath);
-
-    console.log(`FFmpeg Path: ${ffmpegPath}`);
-    console.log(`FFprobe Path: ${ffprobePath}`);
+    // Fallback to ffmpeg-static package if the absolute path doesn't exist for some reason
+    ffmpegPath = fs.existsSync(hostingerFFmpeg) ? hostingerFFmpeg : ffmpegStatic;
+    ffprobePath = fs.existsSync(hostingerFFprobe) ? hostingerFFprobe : ffprobeStatic.path;
 }
+
+ffmpeg.setFfmpegPath(ffmpegPath);
+ffmpeg.setFfprobePath(ffprobePath);
+
+console.log(`Active FFmpeg Path: ${ffmpegPath}`);
+console.log(`Active FFprobe Path: ${ffprobePath}`);
+// --- FIXED PATH LOGIC END ---
 
 // GET: Show edit/create form
 exports.getAdminLive = async (req, res) => {

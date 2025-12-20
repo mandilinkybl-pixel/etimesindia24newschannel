@@ -188,20 +188,22 @@ exports.deleteNews = async (req, res) => {
 
 const ffmpeg = require("fluent-ffmpeg");
 const { createCanvas, loadImage } = require("canvas");
-const ffmpegStatic = require("ffmpeg-static");
-const ffprobeStatic = require("ffprobe-static");
 const os = require("os");
 
+// Use ffmpeg-static for both ffmpeg and ffprobe (cross-platform support)
+// ffmpeg-static provides the path directly as a string
+// No separate ffprobe-static needed anymore (older approach)
 
+const ffmpegStatic = require("ffmpeg-static");
 
-if (os.platform() === "win32") {
-  ffmpeg.setFfmpegPath(ffmpegStatic);
-  ffmpeg.setFfprobePath(ffprobeStatic.path);
-} else {
-  // Linux server (your case)
- ffmpeg.setFfmpegPath("/usr/local/bin/ffmpeg");
-ffmpeg.setFfprobePath("/usr/local/bin/ffprobe");
-}
+// Cross-platform: Works on Windows dev and Linux production
+// Also supports macOS if needed
+ffmpeg.setFfmpegPath(ffmpegStatic);
+ffmpeg.setFfprobePath(ffmpegStatic.replace("ffmpeg", "ffprobe"));
+
+// Optional: Log paths for debugging (remove in production)
+// console.log("FFmpeg path:", ffmpeg.getFfmpegPath());
+// console.log("FFprobe path:", ffmpeg.getFfprobePath());
 exports.downloadVideoWithOverlay = async (req, res) => {
   try {
     const news = await crime.findById(req.params.id);

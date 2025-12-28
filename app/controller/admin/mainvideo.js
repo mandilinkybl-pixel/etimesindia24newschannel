@@ -10,36 +10,21 @@ const os = require("os");
 const { createCanvas } = require("canvas");
 
 // --- FIXED PATH LOGIC START ---
-let ffmpegPath;
-let ffprobePath;
+// let ffmpegPath;
+// let ffprobePath;
 
-if (os.platform() === "win32") {
-    // Windows Development
-    ffmpegPath = ffmpegStatic;
-    ffprobePath = ffprobeStatic.path;
-} else {
-    // Linux / Hostinger Production
-    // We use the absolute path we confirmed in your terminal via the 'find' command
-  // Use these absolute paths verified by your terminal search
-// const hostingerFFmpeg = "/var/www/etimes/etimesindia24newschannel/node_modules/ffmpeg-static/ffmpeg";
-// const hostingerFFprobe = "/var/www/etimes/etimesindia24newschannel/node_modules/ffprobe-static/ffprobe";
+// const ffmpeg = require("fluent-ffmpeg");
 
-    const hostingerFFmpeg ="/var/www/etimes/etimesindia24newschannel/node_modules/ffmpeg-static/ffmpeg";
+ffmpeg.setFfmpegPath(
+  "/var/www/etimes/etimesindia24newschannel/node_modules/ffmpeg-static/ffmpeg"
+);
 
-const hostingerFFprobe ="/usr/local/bin/ffprobe";
+ffmpeg.setFfprobePath(
+  "/usr/local/bin/ffprobe"
+);
 
+console.log("FFmpeg & FFprobe paths locked");
 
-ffmpeg.setFfmpegPath(hostingerFFmpeg);
-ffmpeg.setFfprobePath(hostingerFFprobe);
-
-console.log(`Active FFmpeg Path: ${hostingerFFmpeg}`);
-}
-
-ffmpeg.setFfmpegPath(ffmpegPath);
-ffmpeg.setFfprobePath(ffprobePath);
-
-console.log(`Active FFmpeg Path: ${ffmpegPath}`);
-console.log(`Active FFprobe Path: ${ffprobePath}`);
 // --- FIXED PATH LOGIC END ---
 
 // GET: Show edit/create form

@@ -185,64 +185,60 @@ exports.downloadVideoWithOverlay = async (req, res) => {
 
         const videoPath = path.join(__dirname, "../../../", news.videoUrl);
         const tempDir = path.join(__dirname, "../../../temp");
-        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
-
         const outputPath = path.join(tempDir, `ETimes_${Date.now()}.mp4`);
 
-        // फॉन्ट का सही पाथ (सुनिश्चित करें कि यह फ़ाइल आपके सर्वर पर मौजूद है)
-        // Linux के लिए: "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf" 
-        // या अपना कस्टम फॉन्ट पाथ दें
-        const fontPath = "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf"; 
+        if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
 
-        const headline = news.title || "";
-        const tickerText = news.marqueeText || news.ticker || "";
+        // Ubuntu पर Noto Sans Devanagari का पाथ
+        const fontPath = "/usr/share/fonts/truetype/noto/NotoSansDevanagari-Bold.ttf";
+
+        const headline = news.title || "BREAKING NEWS";
+        const tickerText = news.marqueeText || news.ticker || "ETIMES INDIA 24";
 
         ffmpeg(videoPath)
             .complexFilter([
-                // 1. वीडियो को स्केल करना
+                // 1. वीडियो को 1280x720 पर स्केल करना
                 {
                     filter: "scale",
-                    options: "1280:720", // एक स्टैंडर्ड साइज सेट करें
+                    options: "1280:720",
                     outputs: "scaled"
                 },
-                // 2. ऊपर की सफेद पट्टी (Headline Bar)
+                // 2. ऊपर की हेडलाइन पट्टी (सफेद)
                 {
                     filter: "drawbox",
-                    options: { y: 0, color: "white", width: "iw", height: "70", thickness: "fill" },
+                    options: { y: 0, color: "white", width: "iw", height: "80", thickness: "fill" },
                     inputs: "scaled",
                     outputs: "topbar"
                 },
-                // 3. हेडलाइन टेक्स्ट (Hindi)
+                // 3. हेडलाइन टेक्स्ट (Hindi - Red color)
                 {
                     filter: "drawtext",
                     options: {
                         fontfile: fontPath,
                         text: headline,
                         fontcolor: "#680505",
-                        fontsize: 36,
+                        fontsize: 32,
                         x: "(w-text_w)/2",
-                        y: 15,
-                        shadowcolor: "black",
-                        shadowx: 1, shadowy: 1
+                        y: 22
                     },
                     inputs: "topbar",
                     outputs: "withheadline"
                 },
-                // 4. नीचे की लाल पट्टी (Ticker Bar)
+                // 4. नीचे की टिकर पट्टी (लाल)
                 {
                     filter: "drawbox",
                     options: { y: "ih-60", color: "#8B0000", width: "iw", height: "60", thickness: "fill" },
                     inputs: "withheadline",
                     outputs: "bottombar"
                 },
-                // 5. टिकर टेक्स्ट (Hindi)
+                // 5. टिकर टेक्स्ट (Hindi - White color)
                 {
                     filter: "drawtext",
                     options: {
                         fontfile: fontPath,
                         text: tickerText,
                         fontcolor: "white",
-                        fontsize: 28,
+                        fontsize: 26,
                         x: 20,
                         y: "h-45"
                     },
@@ -252,21 +248,20 @@ exports.downloadVideoWithOverlay = async (req, res) => {
             ])
             .outputOptions([
                 "-map [final]",
-                "-map 0:a?",
+                "-map 0:a?", // ऑडियो को सुरक्षित रखें
                 "-c:v libx264",
                 "-preset fast",
-                "-crf 22",
+                "-crf 23",
                 "-c:a aac",
                 "-pix_fmt yuv420p"
             ])
-            .on("start", cmd => console.log("FFmpeg CMD:", cmd))
             .on("end", () => {
                 res.download(outputPath, () => {
-                    try { fs.unlinkSync(outputPath); } catch {}
+                    try { fs.unlinkSync(outputPath); } catch (e) {}
                 });
             })
-            .on("error", err => {
-                console.error("FFmpeg ERROR:", err.message);
+            .on("error", (err) => {
+                console.error("FFmpeg Error:", err);
                 res.redirect("/admin/main");
             })
             .save(outputPath);
@@ -276,7 +271,6 @@ exports.downloadVideoWithOverlay = async (req, res) => {
         res.redirect("/admin/main");
     }
 };
-
 // ===============================
 // GET ADMIN LIVE
 // ===============================

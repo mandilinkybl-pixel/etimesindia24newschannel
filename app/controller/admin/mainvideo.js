@@ -102,41 +102,48 @@ exports.downloadVideoWithOverlay = async (req, res) => {
     // ========== RUN FFMPEG ==========
     ffmpeg(videoPath)
       .input(overlayPath)
-      .complexFilter([
-        {
-          filter: "scale",
-          options: {
-            w: W,
-            h: H,
-            force_original_aspect_ratio: "decrease",
-          },
-        },
-        {
-          filter: "pad",
-          options: {
-            w: W,
-            h: H,
-            x: "(ow-iw)/2",
-            y: "(oh-ih)/2",
-            color: "black",
-          },
-        },
-        {
-          filter: "overlay",
-          options: { x: 0, y: 0 },
-        },
-      ])
-      .outputOptions([
-        "-map 0:v",
-        "-map 0:a?",
-        "-c:v libx264",
-        "-preset medium",
-        "-crf 20",
-        "-c:a aac",
-        "-b:a 192k",
-        "-movflags +faststart",
-        "-pix_fmt yuv420p",
-      ])
+.complexFilter([
+  {
+    filter: "scale",
+    options: {
+      w: W,
+      h: H,
+      force_original_aspect_ratio: "decrease",
+    },
+    inputs: "0:v",
+    outputs: "scaled",
+  },
+  {
+    filter: "pad",
+    options: {
+      w: W,
+      h: H,
+      x: "(ow-iw)/2",
+      y: "(oh-ih)/2",
+      color: "black",
+    },
+    inputs: "scaled",
+    outputs: "base",
+  },
+  {
+    filter: "overlay",
+    options: { x: 0, y: 0 },
+    inputs: ["base", "1:v"],
+    outputs: "out",
+  },
+])
+.outputOptions([
+  "-map", "[out]",
+  "-map", "0:a?",
+  "-c:v", "libx264",
+  "-preset", "medium",
+  "-crf", "20",
+  "-c:a", "aac",
+  "-b:a", "192k",
+  "-movflags", "+faststart",
+  "-pix_fmt", "yuv420p",
+])
+
       .on("start", cmd => console.log("FFmpeg CMD:", cmd))
       .on("end", () => {
         console.log("Video processed successfully");

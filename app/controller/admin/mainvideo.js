@@ -5,11 +5,11 @@ const fs = require("fs");
 const path = require("path");
 const os = require("os");
 const ffmpeg = require("fluent-ffmpeg");
-const { createCanvas, loadImage } = require("canvas");
+const { createCanvas } = require("canvas");
 
-// =======================
-// 🔒 LOCK FFMPEG PATHS
-// =======================
+// ===============================
+// 🔒 LOCK FFMPEG & FFPROBE PATHS
+// ===============================
 ffmpeg.setFfmpegPath(
   "/var/www/etimes/etimesindia24newschannel/node_modules/ffmpeg-static/ffmpeg"
 );
@@ -17,9 +17,9 @@ ffmpeg.setFfprobePath("/usr/local/bin/ffprobe");
 
 console.log("FFmpeg & FFprobe paths locked");
 
-// =======================
+// ===============================
 // GET ADMIN LIVE
-// =======================
+// ===============================
 exports.getAdminLive = async (req, res) => {
   try {
     const live = await MainLive.findOne();
@@ -39,9 +39,9 @@ exports.getAdminLive = async (req, res) => {
   }
 };
 
-// =======================
+// ===============================
 // POST ADMIN LIVE
-// =======================
+// ===============================
 exports.postAdminLive = async (req, res) => {
   try {
     const { title, marqueeText, videoUrl, posterUrl, isActive, expiresAt } =
@@ -59,10 +59,7 @@ exports.postAdminLive = async (req, res) => {
       : posterUrl;
 
     let live = await MainLive.findOne().sort({ createdAt: -1 });
-
-    if (!live) {
-      live = new MainLive({});
-    }
+    if (!live) live = new MainLive({});
 
     live.title = title;
     live.marqueeText = marqueeText;
@@ -83,9 +80,9 @@ exports.postAdminLive = async (req, res) => {
   }
 };
 
-// =======================
-// FONT PATH
-// =======================
+// ===============================
+// FONT PATH (LINUX SAFE)
+// ===============================
 function getFontPath() {
   const fonts = [
     "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
@@ -96,9 +93,9 @@ function getFontPath() {
   return fonts[0];
 }
 
-// =======================
+// ===============================
 // DOWNLOAD VIDEO WITH OVERLAY
-// =======================
+// ===============================
 exports.downloadVideoWithOverlay = async (req, res) => {
   try {
     const news = await MainLive.findById(req.params.id);
@@ -115,18 +112,16 @@ exports.downloadVideoWithOverlay = async (req, res) => {
     const outputPath = path.join(tempDir, `ETimes_${Date.now()}.mp4`);
     const tickerFile = path.join(tempDir, `ticker_${Date.now()}.txt`);
 
-    // =======================
-    // WRITE TICKER TEXT FILE (🔥 FIX)
-    // =======================
+    // 🔥 WRITE TICKER TEXT FILE (Unicode safe)
     fs.writeFileSync(
       tickerFile,
       (news.marqueeText || news.title || "").replace(/\r?\n/g, " "),
       "utf8"
     );
 
-    // =======================
-    // GET METADATA
-    // =======================
+    // ===============================
+    // GET VIDEO METADATA
+    // ===============================
     const metadata = await new Promise((resolve, reject) => {
       ffmpeg.ffprobe(videoPath, (err, data) =>
         err ? reject(err) : resolve(data)
@@ -137,9 +132,9 @@ exports.downloadVideoWithOverlay = async (req, res) => {
     const W = stream.width;
     const H = stream.height;
 
-    // =======================
-    // CREATE OVERLAY
-    // =======================
+    // ===============================
+    // CREATE OVERLAY IMAGE
+    // ===============================
     const canvas = createCanvas(W, H);
     const ctx = canvas.getContext("2d");
 
@@ -154,28 +149,63 @@ exports.downloadVideoWithOverlay = async (req, res) => {
 
     fs.writeFileSync(overlayPath, canvas.toBuffer("image/png"));
 
-    // =======================
-    // FFMPEG FILTER (🔥 FIXED)
-    // =======================
+    // ===============================
+    // 🔥 OBJECT BASED complexFilter (FINAL FIX)
+    // ===============================
     const fontFile = getFontPath();
     const scrollSpeed = Math.floor(W / 8);
 
-    const filters = [
-      `[0:v]scale=${W}:${H}:force_original_aspect_ratio=decrease,pad=${W}:${H}:(ow-iw)/2:(oh-ih)/2:black[v]`,
-      `[v][1:v]overlay=0:0[base]`,
-      `[base]drawtext=fontfile='${fontFile}':textfile='${tickerFile}':fontcolor=white:fontsize=${Math.floor(
-        tickerH * 0.55
-      )}:x=w-mod(t*${scrollSpeed}\\,w+tw):y=${H -
-        tickerH +
-        Math.floor(tickerH * 0.3)}:shadowcolor=black:shadowx=2:shadowy=2[out]`,
-    ].join(";");
-
-    // =======================
-    // RUN FFMPEG
-    // =======================
     ffmpeg(videoPath)
       .input(overlayPath)
-      .complexFilter(filters, ["out"])
+      .complexFilter(
+        [
+          {
+            filter: "scale",
+            options: {
+              w: W,
+              h: H,
+              force_original_aspect_ratio: "decrease",
+            },
+            inputs: "0:v",
+            outputs: "v1",
+          },
+          {
+            filter: "pad",
+            options: {
+              w: W,
+              h: H,
+              x: "(ow-iw)/2",
+              y: "(oh-ih)/2",
+              color: "black",
+            },
+            inputs: "v1",
+            outputs: "v2",
+          },
+          {
+            filter: "overlay",
+            options: { x: 0, y: 0 },
+            inputs: ["v2", "1:v"],
+            outputs: "base",
+          },
+          {
+            filter: "drawtext",
+            options: {
+              fontfile: fontFile,
+              textfile: tickerFile,
+              fontcolor: "white",
+              fontsize: Math.floor(tickerH * 0.55),
+              x: `w-mod(t*${scrollSpeed},w+tw)`,
+              y: H - tickerH + Math.floor(tickerH * 0.3),
+              shadowcolor: "black",
+              shadowx: 2,
+              shadowy: 2,
+            },
+            inputs: "base",
+            outputs: "out",
+          },
+        ],
+        "out"
+      )
       .outputOptions([
         "-map",
         "[out]",

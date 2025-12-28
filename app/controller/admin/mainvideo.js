@@ -1,21 +1,170 @@
 // controllers/admin/mainvideo.js
 
+// controllers/admin/mainvideo.js
+
 const MainLive = require("../../models/main_video");
+const { unlinkSync } = require("fs");
 const fs = require("fs");
 const path = require("path");
-const os = require("os");
 const ffmpeg = require("fluent-ffmpeg");
-const { createCanvas } = require("canvas");
+const ffmpegStatic = require("ffmpeg-static");
+const os = require("os");
+const { createCanvas, loadImage } = require("canvas");
 
-// ===============================
-// 🔒 LOCK FFMPEG & FFPROBE PATHS
-// ===============================
-ffmpeg.setFfmpegPath(
-  "/var/www/etimes/etimesindia24newschannel/node_modules/ffmpeg-static/ffmpeg"
-);
-ffmpeg.setFfprobePath("/usr/local/bin/ffprobe");
+// ================= FFmpeg PATH FIX =================
+if (os.platform() === "win32") {
+  ffmpeg.setFfmpegPath(ffmpegStatic);
+  ffmpeg.setFfprobePath(require("ffprobe-static").path);
+} else {
+  ffmpeg.setFfmpegPath(
+    "/var/www/etimes/etimesindia24newschannel/node_modules/ffmpeg-static/ffmpeg"
+  );
+  ffmpeg.setFfprobePath("/usr/local/bin/ffprobe");
+}
 
-console.log("FFmpeg & FFprobe paths locked");
+console.log("FFmpeg & FFprobe paths set");
+
+// ================= DOWNLOAD VIDEO WITH OVERLAY =================
+exports.downloadVideoWithOverlay = async (req, res) => {
+  try {
+    const news = await MainLive.findById(req.params.id);
+    if (!news || !news.videoUrl) {
+      req.flash("error", "No video found");
+      return res.redirect("/admin/main");
+    }
+
+    const videoPath = path.join(__dirname, "../../../", news.videoUrl);
+    const tempDir = path.join(__dirname, "../../../temp");
+
+    if (!fs.existsSync(tempDir)) {
+      fs.mkdirSync(tempDir, { recursive: true });
+    }
+
+    const overlayPath = path.join(tempDir, `overlay_${Date.now()}.png`);
+    const outputPath = path.join(tempDir, `ETimes_${Date.now()}.mp4`);
+
+    // ========== GET VIDEO METADATA ==========
+    const metadata = await new Promise((resolve, reject) => {
+      ffmpeg.ffprobe(videoPath, (err, data) => {
+        if (err) reject(err);
+        else resolve(data);
+      });
+    });
+
+    const stream = metadata.streams.find(s => s.codec_type === "video");
+    const W = stream.width;
+    const H = stream.height;
+
+    console.log(`Video size: ${W}x${H}`);
+
+    // ========== CREATE OVERLAY IMAGE ==========
+    const canvas = createCanvas(W, H);
+    const ctx = canvas.getContext("2d");
+
+    const topBarH = Math.floor(H * 0.1);
+    const tickerH = Math.floor(H * 0.08);
+
+    ctx.clearRect(0, 0, W, H);
+
+    // ----- TOP BAR -----
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0, 0, W, topBarH);
+
+    ctx.fillStyle = "#680505";
+    ctx.font = `bold ${Math.floor(topBarH * 0.45)}px Arial`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    const headline = (news.title || "BREAKING NEWS").toUpperCase();
+    ctx.fillText(headline, W / 2, topBarH / 2);
+
+    // ----- BOTTOM TICKER -----
+    ctx.fillStyle = "#8B0000";
+    ctx.fillRect(0, H - tickerH, W, tickerH);
+
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `bold ${Math.floor(tickerH * 0.45)}px Arial`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+
+    const tickerText = (
+      news.marqueeText ||
+      news.ticker ||
+      "BREAKING NEWS"
+    ).toUpperCase();
+
+    ctx.fillText(tickerText, 20, H - tickerH / 2);
+
+    // Save overlay image
+    fs.writeFileSync(overlayPath, canvas.toBuffer("image/png"));
+    console.log("Overlay image created");
+
+    // ========== RUN FFMPEG ==========
+    ffmpeg(videoPath)
+      .input(overlayPath)
+      .complexFilter([
+        {
+          filter: "scale",
+          options: {
+            w: W,
+            h: H,
+            force_original_aspect_ratio: "decrease",
+          },
+        },
+        {
+          filter: "pad",
+          options: {
+            w: W,
+            h: H,
+            x: "(ow-iw)/2",
+            y: "(oh-ih)/2",
+            color: "black",
+          },
+        },
+        {
+          filter: "overlay",
+          options: { x: 0, y: 0 },
+        },
+      ])
+      .outputOptions([
+        "-map 0:v",
+        "-map 0:a?",
+        "-c:v libx264",
+        "-preset medium",
+        "-crf 20",
+        "-c:a aac",
+        "-b:a 192k",
+        "-movflags +faststart",
+        "-pix_fmt yuv420p",
+      ])
+      .on("start", cmd => console.log("FFmpeg CMD:", cmd))
+      .on("end", () => {
+        console.log("Video processed successfully");
+
+        res.download(outputPath, err => {
+          try { fs.unlinkSync(overlayPath); } catch {}
+          try { fs.unlinkSync(outputPath); } catch {}
+
+          if (err) console.error("Download error:", err);
+        });
+      })
+      .on("error", err => {
+        console.error("FFmpeg ERROR:", err.message);
+        try { fs.unlinkSync(overlayPath); } catch {}
+        try { fs.unlinkSync(outputPath); } catch {}
+
+        req.flash("error", "Video processing failed");
+        return res.redirect("/admin/main");
+      })
+      .save(outputPath);
+
+  } catch (err) {
+    console.error("SERVER ERROR:", err);
+    req.flash("error", "Something went wrong");
+    return res.redirect("/admin/main");
+  }
+};
+
 
 // ===============================
 // GET ADMIN LIVE
@@ -96,152 +245,3 @@ function getFontPath() {
 // ===============================
 // DOWNLOAD VIDEO WITH OVERLAY
 // ===============================
-exports.downloadVideoWithOverlay = async (req, res) => {
-  try {
-    const news = await MainLive.findById(req.params.id);
-    if (!news || !news.videoUrl) {
-      req.flash("error", "Video not found");
-      return res.redirect("/admin/main");
-    }
-
-    const videoPath = path.join(__dirname, "../../../", news.videoUrl);
-    const tempDir = path.join(__dirname, "../../../temp");
-    if (!fs.existsSync(tempDir)) fs.mkdirSync(tempDir, { recursive: true });
-
-    const overlayPath = path.join(tempDir, `overlay_${Date.now()}.png`);
-    const outputPath = path.join(tempDir, `ETimes_${Date.now()}.mp4`);
-    const tickerFile = path.join(tempDir, `ticker_${Date.now()}.txt`);
-
-    // 🔥 WRITE TICKER TEXT FILE (Unicode safe)
-    fs.writeFileSync(
-      tickerFile,
-      (news.marqueeText || news.title || "").replace(/\r?\n/g, " "),
-      "utf8"
-    );
-
-    // ===============================
-    // GET VIDEO METADATA
-    // ===============================
-    const metadata = await new Promise((resolve, reject) => {
-      ffmpeg.ffprobe(videoPath, (err, data) =>
-        err ? reject(err) : resolve(data)
-      );
-    });
-
-    const stream = metadata.streams.find((s) => s.codec_type === "video");
-    const W = stream.width;
-    const H = stream.height;
-
-    // ===============================
-    // CREATE OVERLAY IMAGE
-    // ===============================
-    const canvas = createCanvas(W, H);
-    const ctx = canvas.getContext("2d");
-
-    const topBarH = Math.floor(H * 0.1);
-    const tickerH = Math.floor(H * 0.06);
-
-    ctx.fillStyle = "#ffffff";
-    ctx.fillRect(0, 0, W, topBarH);
-
-    ctx.fillStyle = "#8B0000";
-    ctx.fillRect(0, H - tickerH, W, tickerH);
-
-    fs.writeFileSync(overlayPath, canvas.toBuffer("image/png"));
-
-    // ===============================
-    // 🔥 OBJECT BASED complexFilter (FINAL FIX)
-    // ===============================
-    const fontFile = getFontPath();
-    const scrollSpeed = Math.floor(W / 8);
-
-    ffmpeg(videoPath)
-      .input(overlayPath)
-      .complexFilter(
-        [
-          {
-            filter: "scale",
-            options: {
-              w: W,
-              h: H,
-              force_original_aspect_ratio: "decrease",
-            },
-            inputs: "0:v",
-            outputs: "v1",
-          },
-          {
-            filter: "pad",
-            options: {
-              w: W,
-              h: H,
-              x: "(ow-iw)/2",
-              y: "(oh-ih)/2",
-              color: "black",
-            },
-            inputs: "v1",
-            outputs: "v2",
-          },
-          {
-            filter: "overlay",
-            options: { x: 0, y: 0 },
-            inputs: ["v2", "1:v"],
-            outputs: "base",
-          },
-          {
-            filter: "drawtext",
-            options: {
-              fontfile: fontFile,
-              textfile: tickerFile,
-              fontcolor: "white",
-              fontsize: Math.floor(tickerH * 0.55),
-              x: `w-mod(t*${scrollSpeed},w+tw)`,
-              y: H - tickerH + Math.floor(tickerH * 0.3),
-              shadowcolor: "black",
-              shadowx: 2,
-              shadowy: 2,
-            },
-            inputs: "base",
-            outputs: "out",
-          },
-        ],
-        "out"
-      )
-      .outputOptions([
-        "-map",
-        "[out]",
-        "-map",
-        "0:a?",
-        "-c:v",
-        "libx264",
-        "-preset",
-        "medium",
-        "-crf",
-        "20",
-        "-c:a",
-        "aac",
-        "-b:a",
-        "192k",
-        "-pix_fmt",
-        "yuv420p",
-      ])
-      .on("end", () => {
-        res.download(outputPath, () => {
-          [overlayPath, outputPath, tickerFile].forEach((f) => {
-            try {
-              fs.unlinkSync(f);
-            } catch {}
-          });
-        });
-      })
-      .on("error", (err) => {
-        console.error("FFmpeg ERROR:", err.message);
-        req.flash("error", err.message);
-        res.redirect("/admin/main");
-      })
-      .save(outputPath);
-  } catch (err) {
-    console.error(err);
-    req.flash("error", err.message);
-    res.redirect("/admin/main");
-  }
-};
